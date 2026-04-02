@@ -5562,7 +5562,9 @@ let worldMapLoaded = false;
 let dashCountryData = [];
 
 window.showDashboard = function() {
-  document.getElementById('dashboardOverlay').classList.add('open');
+  const overlay = document.getElementById('dashboardOverlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   track('dashboard', { action: 'open_dashboard' });
   if (!worldMapLoaded) {
@@ -5635,43 +5637,59 @@ function renderDashboard() {
   const visitedCountries = ranked.length;
 
   // KPI 1: visited countries
-  document.getElementById('kpiCountries').textContent = visitedCountries;
-  document.getElementById('kpiLabel1').textContent = state.lang === 'zh' ? '已访问国家' : 'Countries Visited';
+  const kpiCountries = document.getElementById('kpiCountries');
+  const kpiLabel1 = document.getElementById('kpiLabel1');
+  if (kpiCountries) kpiCountries.textContent = visitedCountries;
+  if (kpiLabel1) kpiLabel1.textContent = state.lang === 'zh' ? '已访问国家' : 'Countries Visited';
 
   // KPI 2: total clicks
-  document.getElementById('kpiTotalClicks').textContent = totalClicks;
-  document.getElementById('kpiLabel2').textContent = state.lang === 'zh' ? '总点击次数' : 'Total Clicks';
+  const kpiTotalClicks = document.getElementById('kpiTotalClicks');
+  const kpiLabel2 = document.getElementById('kpiLabel2');
+  if (kpiTotalClicks) kpiTotalClicks.textContent = totalClicks;
+  if (kpiLabel2) kpiLabel2.textContent = state.lang === 'zh' ? '总点击次数' : 'Total Clicks';
 
   // KPI 3: top country
+  const kpiTopCountry = document.getElementById('kpiTopCountry');
+  const kpiLabel3 = document.getElementById('kpiLabel3');
   const top = ranked[0];
-  if (top) {
-    const topName = top[1].name || top[0];
-    document.getElementById('kpiTopCountry').textContent = topName;
-  } else {
-    document.getElementById('kpiTopCountry').textContent = '—';
-  }
-  document.getElementById('kpiLabel3').textContent = state.lang === 'zh' ? '热度冠军' : 'Top Country';
+  if (kpiTopCountry) kpiTopCountry.textContent = top ? (top[1].name || top[0]) : '—';
+  if (kpiLabel3) kpiLabel3.textContent = state.lang === 'zh' ? '热度冠军' : 'Top Country';
 
   // KPI 4: active countries (last 30d)
   const data30d = filterHeatByPeriod(rawData, '30d');
   const active30 = Object.values(data30d).filter(v => v.clicks > 0).length;
-  document.getElementById('kpiActive').textContent = active30;
-  document.getElementById('kpiLabel4').textContent = state.lang === 'zh' ? '活跃国家' : 'Active Countries';
+  const kpiActive = document.getElementById('kpiActive');
+  const kpiLabel4 = document.getElementById('kpiLabel4');
+  if (kpiActive) kpiActive.textContent = active30;
+  if (kpiLabel4) kpiLabel4.textContent = state.lang === 'zh' ? '活跃国家' : 'Active Countries';
 
   // Labels
-  document.getElementById('dashTitle').textContent = state.lang === 'zh' ? '数据后台' : 'Analytics Dashboard';
-  document.getElementById('dashSubtitle').textContent = state.lang === 'zh' ? '点击热度分析 · 热力图 + 国家排名' : 'Click Heat Analytics · Heatmap + Rankings';
-  document.getElementById('dashBackLabel').textContent = state.lang === 'zh' ? '返回导航' : 'Back to Navigator';
-  document.getElementById('dashSection1').textContent = state.lang === 'zh' ? '世界地图热力图' : 'World Map Heatmap';
-  document.getElementById('dashSection2').textContent = state.lang === 'zh' ? '国家热度排名' : 'Country Heat Ranking';
-  document.getElementById('dashSection3').textContent = state.lang === 'zh' ? '访客来源分析' : 'Visitor Origin Analysis';
-  document.getElementById('dashSection4').textContent = state.lang === 'zh' ? '兴趣矩阵' : 'Interest Matrix';
-  document.getElementById('dashSection5').textContent = state.lang === 'zh' ? '趋势数据' : 'Trend Analytics';
-  document.getElementById('dashMatrixHint').textContent = state.lang === 'zh' ? '访客来源 → 目标市场热度' : 'Visitor Origin → Target Market Heat';
-  document.getElementById('dashMatrixEmptyText').textContent = state.lang === 'zh' ? '暂无兴趣矩阵数据 · 继续探索更多国家吧' : 'No interest matrix data yet · Keep exploring countries';
-  document.getElementById('dashMapTitle').textContent = state.lang === 'zh' ? '全球点击热度' : 'Global Click Heat';
-  document.getElementById('dashMapSubtitle').textContent = state.lang === 'zh' ? '颜色越深 = 点击越多 · 点击地图查看详情' : 'Darker = More clicks · Click a country to navigate';
-  document.getElementById('dashEmptyText').textContent = state.lang === 'zh' ? '暂无热度数据 · 先去探索一些国家吧' : 'No heat data yet · Go explore some countries first';
+  const dashTitle = document.getElementById('dashTitle');
+  const dashSubtitle = document.getElementById('dashSubtitle');
+  const dashBackLabel = document.getElementById('dashBackLabel');
+  const dashSection1 = document.getElementById('dashSection1');
+  const dashSection2 = document.getElementById('dashSection2');
+  const dashSection3 = document.getElementById('dashSection3');
+  const dashSection4 = document.getElementById('dashSection4');
+  const dashSection5 = document.getElementById('dashSection5');
+  const dashMatrixHint = document.getElementById('dashMatrixHint');
+  const dashMatrixEmptyText = document.getElementById('dashMatrixEmptyText');
+  const dashMapTitle = document.getElementById('dashMapTitle');
+  const dashMapSubtitle = document.getElementById('dashMapSubtitle');
+  const dashEmptyText = document.getElementById('dashEmptyText');
+  if (dashTitle) dashTitle.textContent = state.lang === 'zh' ? '数据后台' : 'Analytics Dashboard';
+  if (dashSubtitle) dashSubtitle.textContent = state.lang === 'zh' ? '点击热度分析 · 热力图 + 国家排名' : 'Click Heat Analytics · Heatmap + Rankings';
+  if (dashBackLabel) dashBackLabel.textContent = state.lang === 'zh' ? '返回导航' : 'Back to Navigator';
+  if (dashSection1) dashSection1.textContent = state.lang === 'zh' ? '世界地图热力图' : 'World Map Heatmap';
+  if (dashSection2) dashSection2.textContent = state.lang === 'zh' ? '国家热度排名' : 'Country Heat Ranking';
+  if (dashSection3) dashSection3.textContent = state.lang === 'zh' ? '访客来源分析' : 'Visitor Origin Analysis';
+  if (dashSection4) dashSection4.textContent = state.lang === 'zh' ? '兴趣矩阵' : 'Interest Matrix';
+  if (dashSection5) dashSection5.textContent = state.lang === 'zh' ? '趋势数据' : 'Trend Analytics';
+  if (dashMatrixHint) dashMatrixHint.textContent = state.lang === 'zh' ? '访客来源 → 目标市场热度' : 'Visitor Origin → Target Market Heat';
+  if (dashMatrixEmptyText) dashMatrixEmptyText.textContent = state.lang === 'zh' ? '暂无兴趣矩阵数据 · 继续探索更多国家吧' : 'No interest matrix data yet · Keep exploring countries';
+  if (dashMapTitle) dashMapTitle.textContent = state.lang === 'zh' ? '全球点击热度' : 'Global Click Heat';
+  if (dashMapSubtitle) dashMapSubtitle.textContent = state.lang === 'zh' ? '颜色越深 = 点击越多 · 点击地图查看详情' : 'Darker = More clicks · Click a country to navigate';
+  if (dashEmptyText) dashEmptyText.textContent = state.lang === 'zh' ? '暂无热度数据 · 先去探索一些国家吧' : 'No heat data yet · Go explore some countries first';
 
   // Render heatmap
   renderDashHeatmap(data, ranked);
@@ -5903,7 +5921,7 @@ function renderVisitorSourcePanel() {
     cityCounts[key] = meta.sessionCount || 1;
   }
   const sortedCities = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  cityList.innerHTML = sortedCities.length > 0
+  if (cityList) cityList.innerHTML = sortedCities.length > 0
     ? sortedCities.map(([city, cnt]) => `
         <div class="dash-visitor-item">
           <span class="dash-visitor-item-name">${city}</span>
@@ -5918,7 +5936,7 @@ function renderVisitorSourcePanel() {
     regionCounts[key] = meta.sessionCount || 1;
   }
   const sortedRegions = Object.entries(regionCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  regionList.innerHTML = sortedRegions.length > 0
+  if (regionList) regionList.innerHTML = sortedRegions.length > 0
     ? sortedRegions.map(([reg, cnt]) => `
         <div class="dash-visitor-item">
           <span class="dash-visitor-item-name">${reg}</span>
@@ -6237,6 +6255,8 @@ window.openDetail = function(channel, type) {
   const badge = $('#detailBadge');
   const body = $('#detailBody');
 
+  if (!panel || !overlay || !title || !badge || !body) return;
+
   title.textContent = channel.name;
   const badgeLabel = typeNames[type]?.[state.lang] || type;
   const badgeStyle = typeColors[type] || typeColors.official;
@@ -6244,7 +6264,8 @@ window.openDetail = function(channel, type) {
 
   const isFav = state.favorites.some(f => f.name === channel.name && f.url === channel.url);
   const favBtn = $('#detailFavBtn');
-  favBtn.querySelector('span').textContent = isFav ? (state.lang === 'zh' ? '已收藏' : 'Saved') : (state.lang === 'zh' ? '收藏' : 'Save');
+  const favSpan = favBtn ? favBtn.querySelector('span') : null;
+  if (favSpan) favSpan.textContent = isFav ? (state.lang === 'zh' ? '已收藏' : 'Saved') : (state.lang === 'zh' ? '收藏' : 'Save');
 
   const desc = t(channel.desc);
   const domain = channel.url.replace('https://','').replace('http://','').split('/')[0];
@@ -6316,13 +6337,15 @@ window.toggleDetailFav = function() {
   localStorage.setItem('tr_root_favs', JSON.stringify(state.favorites));
   updateFavBadge();
   const favBtn = $('#detailFavBtn');
-  favBtn.querySelector('span').textContent = !isFav ? (state.lang === 'zh' ? '已收藏' : 'Saved') : (state.lang === 'zh' ? '收藏' : 'Save');
+  const favSpan = favBtn ? favBtn.querySelector('span') : null;
+  if (favSpan) favSpan.textContent = !isFav ? (state.lang === 'zh' ? '已收藏' : 'Saved') : (state.lang === 'zh' ? '收藏' : 'Save');
   renderContent();
 };
 
 // ===== FAV BADGE =====
 function updateFavBadge() {
   const badge = $('#favBadge');
+  if (!badge) return;
   if (state.favorites.length > 0) {
     badge.style.display = 'flex';
     badge.textContent = state.favorites.length;
