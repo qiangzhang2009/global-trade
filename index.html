@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- TradeRoot Analytics SDK — embedded via globaltrade tenant -->
+  <script src="https://website-backend-admin.vercel.app/api/tracking-sdk?tenant=globaltrade" async></script>
   <style>
     /* ===== CSS RESET & ROOT ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -4248,6 +4250,13 @@ let state = {
   currentChannel: null,
 };
 
+// ===== ANALYTICS TRACKING =====
+function track(eventName, data) {
+  if (typeof window !== 'undefined' && window.zxqTrack) {
+    window.zxqTrack.custom(eventName, data);
+  }
+}
+
 // ===== HELPERS =====
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -4354,6 +4363,7 @@ window.toggleTheme = function() {
   state.theme = state.theme === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', state.theme);
   localStorage.setItem('tr_theme', state.theme);
+  track('preference', { action: 'theme_change', theme: state.theme });
 };
 function initTheme() {
   const saved = localStorage.getItem('tr_theme');
@@ -4363,6 +4373,7 @@ function initTheme() {
 // ===== LANG =====
 window.toggleLang = function() {
   state.lang = state.lang === 'zh' ? 'en' : 'zh';
+  track('preference', { action: 'language_change', language: state.lang });
   renderAll();
   localStorage.setItem('tr_lang', state.lang);
   $('#langToggle').textContent = state.lang === 'zh' ? 'EN / 中文' : '中文 / EN';
@@ -4481,10 +4492,12 @@ window.toggleContinent = function(id) {
     state.currentContinent = null;
     state.currentRegion = null;
     state.currentCountry = null;
+    track('navigate', { action: 'close_continent', continent: id });
   } else {
     state.currentContinent = id;
     state.currentRegion = null;
     state.currentCountry = null;
+    track('navigate', { action: 'open_continent', continent: id });
   }
   state.showingFavorites = false;
   renderSidebar();
@@ -4497,9 +4510,11 @@ window.toggleRegion = function(contId, regionId) {
   if (state.currentRegion === regionId) {
     state.currentRegion = null;
     state.currentCountry = null;
+    track('navigate', { action: 'close_region', continent: contId, region: regionId });
   } else {
     state.currentRegion = regionId;
     state.currentCountry = null;
+    track('navigate', { action: 'open_region', continent: contId, region: regionId });
   }
   state.showingFavorites = false;
   renderSidebar();
@@ -4510,6 +4525,7 @@ window.selectCountry = function(contId, regionId, countryId) {
   state.currentRegion = regionId;
   state.currentCountry = countryId;
   state.showingFavorites = false;
+  track('navigate', { action: 'select_country', continent: contId, region: regionId, country: countryId });
   renderSidebar();
   renderContent();
 }
@@ -4524,9 +4540,14 @@ window.selectChannelDirect = function(contId, regionId, countryId, channelName) 
 
 // ===== SEARCH =====
 function initSearch() {
+  let lastQuery = '';
   $('#globalSearch').addEventListener('input', (e) => {
     state.searchQuery = e.target.value.trim();
     state.showingFavorites = false;
+    if (state.searchQuery.length >= 3 && state.searchQuery !== lastQuery) {
+      lastQuery = state.searchQuery;
+      track('search', { query: state.searchQuery, query_length: state.searchQuery.length });
+    }
     renderContent();
   });
 }
@@ -4815,6 +4836,7 @@ function renderChannelCard(channel, index) {
 
 window.setFilter = function(key) {
   state.currentFilter = key;
+  track('filter', { filter_type: key });
   renderContent();
 }
 
@@ -4897,6 +4919,7 @@ function showFavorites() {
   state.showingFavorites = true;
   state.searchQuery = '';
   $('#globalSearch').value = '';
+  track('navigate', { action: 'view_favorites', count: state.favorites.length });
   renderContent();
 }
 function renderFavorites() {
@@ -4928,6 +4951,13 @@ function renderFavorites() {
 // ===== DETAIL PANEL =====
 window.openDetail = function(channel, type) {
   state.currentChannel = { ...channel, _type: type };
+  track('channel_view', {
+    channel_name: channel.name,
+    channel_type: type,
+    channel_url: channel.url,
+    channel_country: state.currentCountry || '',
+    channel_region: state.currentRegion || '',
+  });
   const panel = $('#detailPanel');
   const overlay = $('#detailOverlay');
   const title = $('#detailTitle');
@@ -4987,6 +5017,11 @@ window.closeDetail = function() {
 
 window.openChannel = function() {
   if (state.currentChannel && state.currentChannel.url) {
+    track('channel_visit', {
+      channel_name: state.currentChannel.name,
+      channel_url: state.currentChannel.url,
+      channel_type: state.currentChannel._type,
+    });
     window.open(state.currentChannel.url, '_blank', 'noopener,noreferrer');
     notify(state.lang === 'zh' ? '正在打开官网...' : 'Opening website...');
   }
@@ -4999,15 +5034,16 @@ window.toggleDetailFav = function() {
   if (isFav) {
     state.favorites = state.favorites.filter(f => f.name !== ch.name);
     notify(state.lang === 'zh' ? '已取消收藏' : 'Removed from favorites');
+    track('favorite', { action: 'remove', channel_name: ch.name, channel_url: ch.url, total_favorites: state.favorites.length });
   } else {
     state.favorites.push({ name: ch.name, url: ch.url, desc: ch.desc, tags: ch.tags, type: ch._type });
     notify(state.lang === 'zh' ? '已添加到收藏' : 'Added to favorites');
+    track('favorite', { action: 'add', channel_name: ch.name, channel_url: ch.url, total_favorites: state.favorites.length });
   }
   localStorage.setItem('tr_root_favs', JSON.stringify(state.favorites));
   updateFavBadge();
   const favBtn = $('#detailFavBtn');
   favBtn.querySelector('span').textContent = !isFav ? (state.lang === 'zh' ? '已收藏' : 'Saved') : (state.lang === 'zh' ? '收藏' : 'Save');
-  // Re-render current content to update star icons
   renderContent();
 };
 
