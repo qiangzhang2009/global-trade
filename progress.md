@@ -2,20 +2,29 @@
 
 ## Session Log
 
-### 2026-04-02 — Session Start
+### 2026-04-02 — Session 2 (PM)
 
-**Task:** Build a world-class website for Chinese companies to find overseas distribution/procurement channels.
+**Task:** Run visual QA design review and fix findings.
 
 **Actions taken:**
-1. Read all 7 source markdown files with complete channel data
-2. Read design-consultation SKILL.md
-3. Read planning-with-files SKILL.md
-4. Created task_plan.md, findings.md, progress.md
-5. Checked browse binary availability — READY
+1. Ran `/design-review` — Phase 1-5: First Impression, Design System Extraction, Page Audit, Interaction Flows
+2. Compiled full design audit report with scores: **Design Score B+, AI Slop Score A**
+3. Applied 9 CSS/JS fixes:
+   - Zoom buttons 28×28 → 44×44px (WCAG touch target)
+   - Focus-visible ring on zoom buttons
+   - All `transition: all` → explicit property lists (7 instances)
+   - `color-scheme: dark/light` on :root
+   - `prefers-reduced-motion` media query
+   - Favorites badge "0" removed
+4. Verified all fixes in browser — 0 console errors
 
-**Current phase:** Design consultation — creating DESIGN.md and preview
+**Design audit findings:**
+- HIGH: Zoom button touch targets ❌ → Fixed
+- HIGH: Focus-visible on buttons ❌ → Fixed
+- HIGH: `transition: all` ❌ → Fixed
+- HIGH: Tree ARIA roles ❌ → Deferred (JS refactor)
+- MEDIUM: `color-scheme` missing ❌ → Fixed
+- MEDIUM: `prefers-reduced-motion` missing ❌ → Fixed
+- MEDIUM: Favorites "0" badge ❌ → Fixed
 
-**Next actions:**
-- Generate design preview HTML
-- Get user approval on design direction
-- Build the actual website
+**Overall:** Site quality is **B+** (strong design, minor interaction polish needed)

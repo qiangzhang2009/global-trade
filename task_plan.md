@@ -52,8 +52,14 @@
 
 ### Phase 8 — QA & Polish
 - [x] No JavaScript console errors
-- [ ] Run /design-review for visual QA
-- [ ] Polish visual details based on review
+- [x] Run /design-review for visual QA (B+ overall, A for AI slop)
+- [x] Zoom buttons (A-/A+) increased from 28×28 → 44×44px (WCAG touch target)
+- [x] Focus-visible ring added to zoom buttons (2px teal outline)
+- [x] All `transition: all` replaced with explicit property lists (7 instances)
+- [x] `color-scheme: dark` added to `:root`, `color-scheme: light` for light theme
+- [x] `prefers-reduced-motion` media query added
+- [x] Favorites badge "0" removed from HTML (only shown when count > 0)
+- [ ] Polish visual details based on review (FINDING-001 deferred: tree ARIA roles)
 
 ## Key Design Decisions
 - Tree structure as the primary navigation metaphor (root → branches → leaves → channels)

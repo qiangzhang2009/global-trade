@@ -41,6 +41,7 @@
       --radius-lg: 16px;
       --sidebar-width: 280px;
       --header-height: 64px;
+      --banner-height: 300px;
       --ease-out: cubic-bezier(0, 0, 0.2, 1);
       --ease-in: cubic-bezier(0.4, 0, 1, 1);
     }
@@ -58,8 +59,10 @@
       --text-tertiary: #9c9590;
       --shadow-card: 0 2px 12px rgba(0,0,0,0.08);
       --shadow-panel: -4px 0 24px rgba(0,0,0,0.1);
+      color-scheme: light;
     }
-    html { scroll-behavior: smooth; }
+    :root { color-scheme: dark; }
+    html { scroll-behavior: smooth; color-scheme: dark; }
     body {
       font-family: 'DM Sans', system-ui, sans-serif;
       background: var(--bg-primary);
@@ -164,7 +167,7 @@
       align-items: center;
       justify-content: center;
       color: var(--text-secondary);
-      transition: all 0.15s ease;
+      transition: background-color 0.15s ease, color 0.15s ease;
     }
     .btn-icon:hover {
       background: var(--bg-tertiary);
@@ -182,7 +185,7 @@
       font-weight: 500;
       color: var(--text-secondary);
       border: 1px solid var(--border-default);
-      transition: all 0.15s ease;
+      transition: border-color 0.15s ease, color 0.15s ease;
     }
     .lang-toggle:hover {
       border-color: var(--accent-teal);
@@ -191,6 +194,111 @@
     .btn-sidebar-toggle {
       display: none;
     }
+    .bio-banner {
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative;
+      overflow: hidden;
+      height: var(--banner-height, 300px);
+      cursor: default;
+      flex-shrink: 0;
+    }
+    .bio-banner canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    .bio-banner-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        rgba(11,15,25,0.95) 0%,
+        rgba(11,15,25,0.75) 25%,
+        rgba(11,15,25,0.4) 55%,
+        rgba(11,15,25,0.1) 100%
+      );
+      pointer-events: none;
+      z-index: 2;
+    }
+    .bio-banner-content {
+      position: absolute;
+      top: 50%;
+      left: 32px;
+      transform: translateY(-50%);
+      z-index: 3;
+      max-width: 260px;
+      pointer-events: none;
+      animation: bioReveal 1.4s cubic-bezier(0,0,0.2,1) 0.2s both;
+    }
+    @keyframes bioReveal {
+      from { opacity: 0; transform: translateY(-50%) translateX(-24px); }
+      to { opacity: 1; transform: translateY(-50%) translateX(0); }
+    }
+    .bio-banner-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-teal-light);
+      margin-bottom: 10px;
+      opacity: 0.85;
+    }
+    .bio-banner-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 26px;
+      line-height: 1.25;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+    .bio-banner-title em {
+      font-style: italic;
+      color: var(--accent-teal-light);
+    }
+    .bio-banner-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+    .bio-legend {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      display: flex;
+      gap: 20px;
+      pointer-events: none;
+      animation: bioReveal 1.4s cubic-bezier(0,0,0.2,1) 1s both;
+    }
+    .bio-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .bio-legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .bio-legend-dot.official { background: var(--accent-official); box-shadow: 0 0 8px var(--accent-official); }
+    .bio-legend-dot.b2b { background: var(--accent-b2b); box-shadow: 0 0 8px var(--accent-b2b); }
+    .bio-legend-dot.distribution { background: var(--accent-distribution); box-shadow: 0 0 8px var(--accent-distribution); }
+    .bio-legend-dot.crossborder { background: var(--accent-crossborder); box-shadow: 0 0 8px var(--accent-crossborder); }
+    [data-theme="light"] .bio-banner-overlay {
+      background: linear-gradient(
+        to right,
+        rgba(250,248,245,0.96) 0%,
+        rgba(250,248,245,0.8) 25%,
+        rgba(250,248,245,0.5) 55%,
+        rgba(250,248,245,0.1) 100%
+      );
+    }
+    [data-theme="light"] .bio-banner { background: var(--bg-secondary); }
     .main-wrapper {
       display: flex;
       flex: 1;
@@ -373,6 +481,65 @@
       margin: 8px 16px;
     }
 
+    /* ===== SIDEBAR FOOTER ===== */
+    #sidebar {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #sidebarTree {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .sidebar-footer {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border-subtle);
+      padding: 12px 14px;
+      background: var(--bg-secondary);
+    }
+    .sidebar-footer-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+    }
+    .sidebar-footer-links {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px 8px;
+      margin-bottom: 10px;
+    }
+    .sidebar-footer-link {
+      font-size: 11px;
+      color: var(--accent-teal);
+      text-decoration: none;
+      transition: color 0.15s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sidebar-footer-link:hover { color: #5eead4; text-decoration: underline; }
+    .sidebar-footer-contact {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sidebar-footer-contact-label {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+    .sidebar-footer-contact a {
+      color: var(--accent-teal);
+      text-decoration: none;
+    }
+    .sidebar-footer-contact a:hover { text-decoration: underline; }
+
     /* ===== CONTENT AREA ===== */
     .content {
       flex: 1;
@@ -449,7 +616,7 @@
       font-size: 13px;
       font-weight: 500;
       color: var(--text-secondary);
-      transition: all 0.15s ease;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -498,7 +665,7 @@
       border-radius: var(--radius-lg);
       padding: 20px;
       cursor: pointer;
-      transition: all 0.2s var(--ease-out);
+      transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
       position: relative;
       overflow: hidden;
       display: flex;
@@ -698,7 +865,7 @@
       align-items: center;
       justify-content: center;
       color: var(--text-secondary);
-      transition: all 0.15s ease;
+      transition: background-color 0.15s ease, color 0.15s ease;
       flex-shrink: 0;
       margin-left: 12px;
     }
@@ -777,7 +944,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: all 0.15s ease;
+      transition: background-color 0.15s ease, transform 0.15s ease;
     }
     .btn-primary:hover {
       background: var(--accent-teal-light);
@@ -795,7 +962,7 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: all 0.15s ease;
+      transition: border-color 0.15s ease, color 0.15s ease;
     }
     .btn-ghost:hover { border-color: var(--border-strong); color: var(--text-primary); }
 
@@ -852,27 +1019,36 @@
       color: var(--text-primary);
       transform: translateY(80px);
       opacity: 0;
-      transition: all 0.3s var(--ease-out);
+      transition: transform 0.3s var(--ease-out), opacity 0.3s var(--ease-out), background-color 0.3s ease;
     }
     .notification.show { transform: translateY(0); opacity: 1; }
     .notification-icon { color: var(--accent-teal); flex-shrink: 0; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 1024px) {
       .channels-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
     }
     @media (max-width: 768px) {
-      :root { --sidebar-width: 280px; }
+      :root { --sidebar-width: 280px; --banner-height: 220px; }
+      .bio-banner { height: 220px; }
       .btn-sidebar-toggle { display: flex; }
       .sidebar {
         position: fixed;
         left: 0;
-        top: var(--header-height);
-        height: calc(100vh - var(--header-height));
+        top: calc(var(--header-height) + var(--banner-height));
+        height: calc(100vh - var(--header-height) - var(--banner-height));
         z-index: 50;
         box-shadow: 4px 0 24px rgba(0,0,0,0.3);
       }
       .sidebar.collapsed { transform: translateX(-100%); width: var(--sidebar-width); opacity: 1; }
+      .sidebar-footer { padding: 10px 12px; }
       .content { padding: 16px; }
       .header { padding: 0 16px; }
       .hero-stats { gap: 16px; }
@@ -882,9 +1058,14 @@
       .header-logo-text { display: none; }
       .header-logo-sub { display: none; }
       .detail-panel { width: 100vw; }
+      .bio-legend { gap: 12px; }
+      .bio-banner-content { left: 20px; max-width: 200px; }
     }
     @media (max-width: 480px) {
+      :root { --banner-height: 180px; }
+      .bio-banner { height: 180px; }
       .header-search { display: none; }
+      .bio-legend { display: none; }
     }
 
     /* ===== ZOOM TOOL ===== */
@@ -898,17 +1079,18 @@
       padding: 4px;
     }
     .zoom-btn {
-      width: 28px;
-      height: 28px;
+      width: 44px;
+      height: 44px;
       border-radius: var(--radius-xs);
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--text-secondary);
       font-size: 16px;
-      transition: all 0.1s ease;
+      transition: background-color 0.15s ease, color 0.15s ease;
     }
     .zoom-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+    .zoom-btn:focus-visible { outline: 2px solid var(--accent-teal); outline-offset: 2px; }
     .zoom-level {
       font-size: 12px;
       font-family: 'JetBrains Mono', monospace;
@@ -999,10 +1181,39 @@
       </button>
       <button class="btn-icon favorites-btn" onclick="showFavorites()" title="收藏">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        <span class="fav-badge" id="favBadge" style="display:none">0</span>
+        <span class="fav-badge" id="favBadge" style="display:none"></span>
       </button>
     </div>
   </header>
+
+  <!-- NEURAL WORLD MAP BANNER -->
+  <div class="bio-banner" id="bioBanner">
+    <canvas id="bioCanvas"></canvas>
+    <div class="bio-banner-overlay"></div>
+    <div class="bio-banner-content">
+      <div class="bio-banner-eyebrow">TradeRoot · Neural Atlas</div>
+      <div class="bio-banner-title">全球贸易<em>神经网络</em></div>
+      <div class="bio-banner-desc">每一条神经脉冲，代表一个跨境贸易连接。从亚洲工厂到非洲市场，信号永不眠。</div>
+    </div>
+    <div class="bio-legend">
+      <div class="bio-legend-item">
+        <span class="bio-legend-dot official"></span>
+        <span>官方渠道</span>
+      </div>
+      <div class="bio-legend-item">
+        <span class="bio-legend-dot b2b"></span>
+        <span>B2B平台</span>
+      </div>
+      <div class="bio-legend-item">
+        <span class="bio-legend-dot distribution"></span>
+        <span>分销代理</span>
+      </div>
+      <div class="bio-legend-item">
+        <span class="bio-legend-dot crossborder"></span>
+        <span>跨境平台</span>
+      </div>
+    </div>
+  </div>
 
   <!-- MAIN WRAPPER -->
   <div class="main-wrapper">
@@ -1011,12 +1222,28 @@
       <div class="sidebar-header">
         <div class="sidebar-title" data-i18n="navTitle">导航目录</div>
         <div class="sidebar-stats">
-          <span class="stat-pill">144 <span data-i18n="countries">国家</span></span>
-          <span class="stat-pill">900+ <span data-i18n="channels">渠道</span></span>
+          <span class="stat-pill"><span class="stat-countries">—</span> <span data-i18n="countries">国家</span></span>
+          <span class="stat-pill"><span class="stat-channels">—</span> <span data-i18n="channels">渠道</span></span>
         </div>
       </div>
       <div class="sidebar-tree" id="sidebarTree">
         <!-- Tree rendered by JS -->
+      </div>
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-title">集团站点</div>
+        <div class="sidebar-footer-links">
+          <a href="https://www.zxqconsulting.com/" target="_blank" class="sidebar-footer-link">上海张小强企业咨询</a>
+          <a href="https://global2china.zxqconsulting.com" target="_blank" class="sidebar-footer-link">Global2China 海外优品</a>
+          <a href="https://africa.zxqconsulting.com/" target="_blank" class="sidebar-footer-link">AfricaZero 非洲零关税</a>
+          <a href="https://asia-bridge.zxqconsulting.com/" target="_blank" class="sidebar-footer-link">AsiaBridge 出海通</a>
+        </div>
+        <div class="sidebar-footer-contact">
+          <div class="sidebar-footer-contact-label">联系我们</div>
+          <span>更多出海订制服务请联系我们</span>
+          <span><a href="mailto:customer@zxqconsulting.com">customer@zxqconsulting.com</a></span>
+          <span>微信公众号/视频号: 张小强出海</span>
+          <span>电话（同微信）: 13764872538</span>
+        </div>
       </div>
     </nav>
 
@@ -1332,6 +1559,36 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
+            },
+            {
+              id: "macau",
+              name: { zh: "中国澳门", en: "Macau" },
+              flag: "MO",
+              channels: {
+                official: [
+                  { name: "澳门贸易投资促进局IPIM", url: "https://www.ipim.gov.mo", desc: { zh: "澳门政府直属贸易投资促进机构，适配对接葡语国家采购商资源", en: "Macau government trade investment promotion agency, connecting to Portuguese-speaking markets" }, tags: ["官方", "贸易促进", "葡语国家"] },
+                  { name: "澳门中华总商会", url: "https://www.macaochamber.com", desc: { zh: "澳门核心商会组织，对接本土进口商、批发商资源", en: "Macau's core chamber of commerce connecting importers and wholesalers" }, tags: ["商会", "进口", "批发"] }
+                ],
+                b2b: [
+                  { name: "Macau Business Directory", url: "https://www.macaobusinessdirectory.com", desc: { zh: "澳门本土企业名录平台", en: "Macau's domestic business directory" }, tags: ["企业名录", "B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "timor-leste",
+              name: { zh: "东帝汶", en: "Timor-Leste" },
+              flag: "TL",
+              channels: {
+                official: [
+                  { name: "东帝汶工商会CCI-TL", url: "https://www.cci.tl", desc: { zh: "东帝汶全国性商会组织", en: "Timor-Leste's national chamber of commerce" }, tags: ["商会"] },
+                  { name: "东帝汶贸易投资促进局", url: "https://www.tipografia.gov.tl", desc: { zh: "东帝汶政府贸易投资促进机构", en: "Timor-Leste's trade and investment promotion agency" }, tags: ["官方", "贸易促进"] }
+                ],
+                b2b: [
+                  { name: "Timor-Leste B2B", url: "https://www.timorleste-b2b.com", desc: { zh: "东帝汶本土B2B平台", en: "Timor-Leste's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
             }
           ]
         },
@@ -1406,6 +1663,67 @@ const TRADEDATA = {
                 ],
                 b2b: [
                   { name: "Sri Lanka B2B", url: "https://www.srilankab2b.com", desc: { zh: "斯里兰卡本土B2B平台", en: "Sri Lanka's domestic B2B platform" }, tags: ["B2B", "茶叶", "纺织"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "afghanistan",
+              name: { zh: "阿富汗", en: "Afghanistan" },
+              flag: "AF",
+              channels: {
+                official: [
+                  { name: "阿富汗工商会ACCI", url: "https://www.acci.org.af", desc: { zh: "阿富汗全国性商会组织", en: "Afghanistan Chamber of Commerce and Investment" }, tags: ["商会"] },
+                  { name: "阿富汗贸易促进局ATPA", url: "https://www.mcit.gov.af", desc: { zh: "阿富汗政府贸易促进机构", en: "Afghanistan's trade promotion agency" }, tags: ["官方", "贸易促进"] }
+                ],
+                b2b: [
+                  { name: "Afghanistan B2B", url: "https://www.afghanistanb2b.com", desc: { zh: "阿富汗本土B2B平台", en: "Afghanistan's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "bhutan",
+              name: { zh: "不丹", en: "Bhutan" },
+              flag: "BT",
+              channels: {
+                official: [
+                  { name: "不丹工商会BCCI", url: "https://www.bcci.org.bt", desc: { zh: "不丹全国性商会组织", en: "Bhutan Chamber of Commerce and Industry" }, tags: ["商会"] },
+                  { name: "不丹投资管理局", url: "https://www.bica.gov.bt", desc: { zh: "不丹政府投资管理局", en: "Bhutan's investment management agency" }, tags: ["官方", "投资"] }
+                ],
+                b2b: [
+                  { name: "Bhutan B2B", url: "https://www.bhutantrade.bt", desc: { zh: "不丹本土B2B平台", en: "Bhutan's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "maldives",
+              name: { zh: "马尔代夫", en: "Maldives" },
+              flag: "MV",
+              channels: {
+                official: [
+                  { name: "马尔代夫贸易促进局MTPA", url: "https://www.mtourism.gov.mv", desc: { zh: "马尔代夫政府旅游贸易促进机构", en: "Maldives tourism and trade promotion agency" }, tags: ["官方", "旅游", "贸易"] },
+                  { name: "马尔代夫工商会MCCI", url: "https://www.maldiveschamber.org", desc: { zh: "马尔代夫全国性商会组织", en: "Maldives Chamber of Commerce and Industry" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Maldives B2B", url: "https://www.maldivesb2b.mv", desc: { zh: "马尔代夫本土B2B平台", en: "Maldives' domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "nepal",
+              name: { zh: "尼泊尔", en: "Nepal" },
+              flag: "NP",
+              channels: {
+                official: [
+                  { name: "尼泊尔工商会FNCCI", url: "https://www.fncci.org", desc: { zh: "尼泊尔全国性商会组织", en: "Federation of Nepalese Chambers of Commerce and Industry" }, tags: ["商会"] },
+                  { name: "尼泊尔出口促进局EPB", url: "https://www.epn.gov.np", desc: { zh: "尼泊尔政府出口促进机构", en: "Nepal's export promotion bureau" }, tags: ["官方", "出口"] },
+                  { name: "尼泊尔政府采购平台", url: "https://www.bolpatra.gov.np", desc: { zh: "尼泊尔政府招标采购门户", en: "Nepal's public procurement portal" }, tags: ["政府采购", "招标"] }
+                ],
+                b2b: [
+                  { name: "Nepal B2B", url: "https://www.nepalb2b.com", desc: { zh: "尼泊尔本土B2B平台", en: "Nepal's domestic B2B platform" }, tags: ["B2B"] }
                 ],
                 distribution: []
               }
@@ -1595,6 +1913,143 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
+            },
+            {
+              id: "georgia",
+              name: { zh: "格鲁吉亚", en: "Georgia" },
+              flag: "GE",
+              channels: {
+                official: [
+                  { name: "格鲁吉亚国家旅游局GNTA", url: "https://gnta.ge", desc: { zh: "格鲁吉亚政府官方旅游贸易促进机构", en: "Georgia's national tourism and trade agency" }, tags: ["官方", "旅游", "贸易"] },
+                  { name: "格鲁吉亚工商会Georgian Chamber", url: "https://gcca.ge", desc: { zh: "格鲁吉亚全国性商会组织", en: "Georgia's chamber of commerce and industry" }, tags: ["商会"] },
+                  { name: "格鲁吉亚政府采购平台", url: "https://www.procurement.gov.ge", desc: { zh: "格鲁吉亚政府官方招标采购门户", en: "Georgia's official government procurement portal" }, tags: ["政府采购", "招标"] }
+                ],
+                b2b: [
+                  { name: "Georgia B2B", url: "https://www.georgiab2b.ge", desc: { zh: "格鲁吉亚本土B2B平台", en: "Georgia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "armenia",
+              name: { zh: "亚美尼亚", en: "Armenia" },
+              flag: "AM",
+              channels: {
+                official: [
+                  { name: "亚美尼亚工商会CCI Armenia", url: "https://www.cci.am", desc: { zh: "亚美尼亚全国性商会组织", en: "Armenia's chamber of commerce and industry" }, tags: ["商会"] },
+                  { name: "亚美尼亚贸易促进局", url: "https://www.mineconomy.am", desc: { zh: "亚美尼亚政府贸易促进机构", en: "Armenia's trade promotion agency" }, tags: ["官方", "贸易促进"] }
+                ],
+                b2b: [
+                  { name: "Armenia B2B", url: "https://www.armeniab2b.am", desc: { zh: "亚美尼亚本土B2B平台", en: "Armenia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "azerbaijan",
+              name: { zh: "阿塞拜疆", en: "Azerbaijan" },
+              flag: "AZ",
+              channels: {
+                official: [
+                  { name: "阿塞拜疆工商会AZPROMO", url: "https://azpromo.az", desc: { zh: "阿塞拜疆政府出口投资促进机构", en: "Azerbaijan's export and investment promotion agency" }, tags: ["官方", "出口", "投资"] },
+                  { name: "阿塞拜疆政府采购平台", url: "https://www. procurement.gov.az", desc: { zh: "阿塞拜疆政府官方招标采购门户", en: "Azerbaijan's official government procurement portal" }, tags: ["政府采购", "招标"] }
+                ],
+                b2b: [
+                  { name: "Azerbaijan B2B", url: "https://www.azerbaijanb2b.az", desc: { zh: "阿塞拜疆本土B2B平台", en: "Azerbaijan's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "iraq",
+              name: { zh: "伊拉克", en: "Iraq" },
+              flag: "IQ",
+              channels: {
+                official: [
+                  { name: "伊拉克工商会ICC Iraq", url: "https://www.icciraq.org", desc: { zh: "伊拉克全国性商会组织", en: "Iraq's chamber of commerce" }, tags: ["商会"] },
+                  { name: "伊拉克贸易部", url: "https://www.mot.gov.iq", desc: { zh: "伊拉克政府贸易主管部门", en: "Iraq's ministry of trade" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Iraq B2B", url: "https://www.iraqb2b.iq", desc: { zh: "伊拉克本土B2B平台", en: "Iraq's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "jordan",
+              name: { zh: "约旦", en: "Jordan" },
+              flag: "JO",
+              channels: {
+                official: [
+                  { name: "约旦贸易促进局JFDA", url: "https://www.jordanbusiness.org", desc: { zh: "约旦政府商务促进机构", en: "Jordan's trade and business development agency" }, tags: ["官方", "贸易促进"] },
+                  { name: "约旦工商会JCCI", url: "https://www.jcci.org", desc: { zh: "约旦全国性商会组织", en: "Jordan Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "约旦政府采购平台", url: "https://www.gpp.gov.jo", desc: { zh: "约旦政府官方招标采购门户", en: "Jordan's government procurement portal" }, tags: ["政府采购", "招标"] }
+                ],
+                b2b: [
+                  { name: "Jordan B2B", url: "https://www.jordanb2b.com", desc: { zh: "约旦本土B2B平台", en: "Jordan's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "lebanon",
+              name: { zh: "黎巴嫩", en: "Lebanon" },
+              flag: "LB",
+              channels: {
+                official: [
+                  { name: "黎巴嫩商会CCI Lebanon", url: "https://www.cci.org.lb", desc: { zh: "黎巴嫩全国性商会组织", en: "Lebanon's chamber of commerce and industry" }, tags: ["商会"] },
+                  { name: "黎巴嫩出口促进局", url: "https://www.lebtrade.com", desc: { zh: "黎巴嫩政府出口促进机构", en: "Lebanon's export promotion agency" }, tags: ["官方", "出口"] }
+                ],
+                b2b: [
+                  { name: "Lebanon B2B", url: "https://www.lebanonb2b.com", desc: { zh: "黎巴嫩本土B2B平台", en: "Lebanon's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "yemen",
+              name: { zh: "也门", en: "Yemen" },
+              flag: "YE",
+              channels: {
+                official: [
+                  { name: "也门工商会YCCI", url: "https://www.ycci.org", desc: { zh: "也门全国性商会组织", en: "Yemen Chamber of Commerce and Industry" }, tags: ["商会"] },
+                  { name: "也门贸易部", url: "https://www.mot.gov.ye", desc: { zh: "也门政府贸易主管部门", en: "Yemen's ministry of trade" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Yemen B2B", url: "https://www.yemenb2b.com", desc: { zh: "也门本土B2B平台", en: "Yemen's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "palestine",
+              name: { zh: "巴勒斯坦", en: "Palestine" },
+              flag: "PS",
+              channels: {
+                official: [
+                  { name: "巴勒斯坦工商会PCCI", url: "https://www.pcci.org", desc: { zh: "巴勒斯坦全国性商会组织", en: "Palestine Chamber of Commerce and Industry" }, tags: ["商会"] },
+                  { name: "巴勒斯坦贸易促进局", url: "https://www.paltrade.org", desc: { zh: "巴勒斯坦政府贸易促进机构", en: "Palestine's trade promotion agency" }, tags: ["官方", "贸易促进"] }
+                ],
+                b2b: [
+                  { name: "Palestine B2B", url: "https://www.palestineb2b.ps", desc: { zh: "巴勒斯坦本土B2B平台", en: "Palestine's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "syria",
+              name: { zh: "叙利亚", en: "Syria" },
+              flag: "SY",
+              channels: {
+                official: [
+                  { name: "叙利亚工商会CSC", url: "https://www.csc-sy.org", desc: { zh: "叙利亚全国性商会组织", en: "Syria Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "叙利亚贸易部", url: "https://www.mot.gov.sy", desc: { zh: "叙利亚政府贸易主管部门", en: "Syria's ministry of trade" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Syria B2B", url: "https://www.syriab2b.sy", desc: { zh: "叙利亚本土B2B平台", en: "Syria's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
             }
           ]
         }
@@ -1611,30 +2066,6 @@ const TRADEDATA = {
       name: { zh: "欧洲", en: "Europe" },
       nameSort: "E",
       regions: [
-        {
-          id: "pan-europe",
-          name: { zh: "全欧洲", en: "Pan-European" },
-          countries: [],
-          panregional: {
-            official: [
-              { name: "TED (Tenders Electronic Daily)", url: "https://ted.europa.eu", desc: { zh: "欧盟官方公共采购门户，全欧公共采购的唯一官方发布平台，日均发布超3000条采购招标", en: "EU's official public procurement portal — the only official source for all European public tenders" }, tags: ["欧盟", "政府采购", "招标", "全品类"] },
-              { name: "Enterprise Europe Network (EEN)", url: "https://een.ec.europa.eu", desc: { zh: "欧盟官方企业对接网络，全球最大中小企业支持网络之一，覆盖60+国家", en: "EU's official business matching network — one of the world's largest SME support networks" }, tags: ["欧盟", "企业对接", "中小企业"] },
-              { name: "Eurochambres", url: "https://www.eurochambres.eu", desc: { zh: "欧洲工商会联合会，覆盖45个国家2000+地方商会4500万+企业会员", en: "European Chambers of Commerce Federation with 45 countries, 2,000+ local chambers, 45M+ companies" }, tags: ["商会", "全欧", "企业对接"] },
-              { name: "欧盟贸易委员会官网", url: "https://policy.trade.ec.europa.eu", desc: { zh: "欧盟贸易政策官方发布平台", en: "EU Trade Commission's official policy portal" }, tags: ["欧盟", "贸易政策"] }
-            ],
-            b2b: [
-              { name: "Europages（欧洲黄页）", url: "https://www.europages.com", desc: { zh: "欧洲最大的B2B企业名录与采购平台，覆盖33+欧洲国家260万+企业，支持25种语言", en: "Europe's largest B2B business directory covering 33+ countries, 2.6M+ companies, in 25 languages" }, tags: ["欧洲", "企业名录", "全品类", "多语言"] },
-              { name: "Kompass Europe", url: "https://www.kompass.com", desc: { zh: "1947年成立于瑞士，欧洲最权威B2B企业数据库，覆盖60+国家5700万+企业", en: "Europe's most authoritative B2B database since 1947, covering 60+ countries and 57M+ companies" }, tags: ["欧洲", "数据库", "工业"] },
-              { name: "DirectIndustry", url: "https://www.directindustry.com", desc: { zh: "欧洲顶级工业垂直B2B平台，被称为\"工业版阿里巴巴\"", en: "Europe's top industrial B2B platform, dubbed the 'Industrial Alibaba'" }, tags: ["欧洲", "工业", "机械", "垂直"] },
-              { name: "Archiexpo", url: "https://www.archiexpo.com", desc: { zh: "建筑家居领域欧洲最权威B2B平台", en: "Europe's most authoritative B2B platform for architecture and home" }, tags: ["欧洲", "建筑", "家居"] }
-            ],
-            distribution: [
-              { name: "European Distribution Network", url: "https://www.europeandistributionnetwork.com", desc: { zh: "欧洲最大分销代理匹配平台，覆盖全行业", en: "Europe's largest distribution network matching platform" }, tags: ["欧洲", "分销", "代理"] },
-              { name: "Distributors Europe", url: "https://www.distributorseurope.com", desc: { zh: "专业欧洲分销商对接平台，超10万家欧洲本土分销商数据库", en: "Professional European distributor matching platform with 100,000+ distributor database" }, tags: ["欧洲", "分销商"] },
-              { name: "European Agency Network", url: "https://www.europeanagencynetwork.com", desc: { zh: "欧洲本土专业代理合作匹配平台", en: "European professional agency partnership matching platform" }, tags: ["欧洲", "代理"] }
-            ]
-          }
-        },
         {
           id: "western-europe",
           name: { zh: "西欧", en: "Western Europe" },
@@ -1761,6 +2192,53 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
+            },
+            {
+              id: "ireland",
+              name: { zh: "爱尔兰", en: "Ireland" },
+              flag: "IE",
+              channels: {
+                official: [
+                  { name: "爱尔兰企业局Enterprise Ireland", url: "https://www.enterpriseireland.com", desc: { zh: "爱尔兰政府官方贸易促进机构，适配对接欧盟市场渠道", en: "Ireland's government trade agency connecting to EU markets" }, tags: ["官方", "贸易促进", "欧盟"] },
+                  { name: "爱尔兰工商总会ISME", url: "https://www.isme.ie", desc: { zh: "爱尔兰中小企业商会组织", en: "Ireland's SME association" }, tags: ["商会", "中小企业"] },
+                  { name: "爱尔兰政府采购平台eTenders", url: "https://www.etenders.gov.ie", desc: { zh: "爱尔兰政府官方招标采购门户", en: "Ireland's official government e-procurement portal" }, tags: ["政府采购", "招标"] }
+                ],
+                b2b: [
+                  { name: "Ireland B2B", url: "https://www.irelandb2b.com", desc: { zh: "爱尔兰本土B2B平台", en: "Ireland's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "luxembourg",
+              name: { zh: "卢森堡", en: "Luxembourg" },
+              flag: "LU",
+              channels: {
+                official: [
+                  { name: "卢森堡贸易投资局Luxtrade", url: "https://www.luxtrade.lu", desc: { zh: "卢森堡政府贸易投资促进机构，适配对接欧盟金融与分销渠道", en: "Luxembourg's trade and investment agency connecting to EU financial channels" }, tags: ["官方", "贸易促进", "金融"] },
+                  { name: "卢森堡工商会CCM", url: "https://www.ccm.lu", desc: { zh: "卢森堡全国性商会组织", en: "Luxembourg Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Luxembourg B2B", url: "https://www.luxembourgb2b.lu", desc: { zh: "卢森堡本土B2B平台", en: "Luxembourg's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "iceland",
+              name: { zh: "冰岛", en: "Iceland" },
+              flag: "IS",
+              channels: {
+                official: [
+                  { name: "冰岛贸易促进局Icelandic Trade", url: "https://www.isomorphic.is", desc: { zh: "冰岛政府贸易促进机构", en: "Iceland's trade promotion agency" }, tags: ["官方", "贸易促进"] },
+                  { name: "冰岛工商会CCI Iceland", url: "https://www.vi.is", desc: { zh: "冰岛全国性商会组织", en: "Icelandic Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "冰岛政府采购平台", url: "https://www.samning.is", desc: { zh: "冰岛政府官方采购门户", en: "Iceland's government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Iceland B2B", url: "https://www.icelandb2b.is", desc: { zh: "冰岛本土B2B平台", en: "Iceland's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
             }
           ]
         },
@@ -1828,6 +2306,86 @@ const TRADEDATA = {
                 ],
                 b2b: [
                   { name: "Greece Business Directory", url: "https://www.greecebusinessdirectory.gr", desc: { zh: "希腊本土B2B平台", en: "Greece's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "malta",
+              name: { zh: "马耳他", en: "Malta" },
+              flag: "MT",
+              channels: {
+                official: [
+                  { name: "马耳他贸易促进局Malta Enterprise", url: "https://www.maltaenterprise.com", desc: { zh: "马耳他政府官方贸易促进机构", en: "Malta's official enterprise development agency" }, tags: ["官方"] },
+                  { name: "马耳他工商会MDIA", url: "https://www.maltachamber.org", desc: { zh: "马耳他全国性商会组织", en: "Malta Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "马耳他政府采购平台", url: "https://www. procurement.gov.mt", desc: { zh: "马耳他政府官方采购门户", en: "Malta's government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Malta B2B", url: "https://www.maltab2b.com", desc: { zh: "马耳他本土B2B平台", en: "Malta's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "cyprus",
+              name: { zh: "塞浦路斯", en: "Cyprus" },
+              flag: "CY",
+              channels: {
+                official: [
+                  { name: "塞浦路斯贸易促进局CIPA", url: "https://www.cipa.org.cy", desc: { zh: "塞浦路斯政府官方贸易促进机构", en: "Cyprus Investment Promotion Agency" }, tags: ["官方"] },
+                  { name: "塞浦路斯工商会CCCI", url: "https://www.ccci.org.cy", desc: { zh: "塞浦路斯全国性商会组织", en: "Cyprus Chamber of Commerce and Industry" }, tags: ["商会"] },
+                  { name: "塞浦路斯政府采购平台", url: "https://www.eprocurement.gov.cy", desc: { zh: "塞浦路斯政府官方采购门户", en: "Cyprus government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Cyprus B2B", url: "https://www.cyprusb2b.com", desc: { zh: "塞浦路斯本土B2B平台", en: "Cyprus' domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "slovenia",
+              name: { zh: "斯洛文尼亚", en: "Slovenia" },
+              flag: "SI",
+              channels: {
+                official: [
+                  { name: "斯洛文尼亚企业局SPIRIT", url: "https://www.spiritslovenia.si", desc: { zh: "斯洛文尼亚政府官方企业促进机构", en: "Slovenia's official business development agency" }, tags: ["官方"] },
+                  { name: "斯洛文尼亚工商会GZS", url: "https://www.gzs.si", desc: { zh: "斯洛文尼亚全国性商会组织", en: "Slovenian Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "斯洛文尼亚政府采购平台", url: "https://www.enarhiv.si", desc: { zh: "斯洛文尼亚政府采购门户", en: "Slovenia public procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Slovenia B2B", url: "https://www.sloveniab2b.si", desc: { zh: "斯洛文尼亚本土B2B平台", en: "Slovenia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "croatia",
+              name: { zh: "克罗地亚", en: "Croatia" },
+              flag: "HR",
+              channels: {
+                official: [
+                  { name: "克罗地亚商会HGK", url: "https://www.hgk.hr", desc: { zh: "克罗地亚全国性商会组织", en: "Croatian Chamber of Economy" }, tags: ["商会"] },
+                  { name: "克罗地亚贸易投资促进局", url: "https://www.agencija-potportal.hr", desc: { zh: "克罗地亚政府贸易投资促进机构", en: "Croatia's trade and investment promotion agency" }, tags: ["官方"] },
+                  { name: "克罗地亚政府采购平台", url: "https://www.sjavno.hr", desc: { zh: "克罗地亚政府采购门户", en: "Croatia public procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Croatia B2B", url: "https://www.croatiab2b.hr", desc: { zh: "克罗地亚本土B2B平台", en: "Croatia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "slovakia",
+              name: { zh: "斯洛伐克", en: "Slovakia" },
+              flag: "SK",
+              channels: {
+                official: [
+                  { name: "斯洛伐克投资贸易发展局SARIO", url: "https://www.sario.sk", desc: { zh: "斯洛伐克政府官方贸易投资促进机构", en: "Slovak Investment and Trade Development Agency" }, tags: ["官方"] },
+                  { name: "斯洛伐克工商会SOK", url: "https://www.sok.sk", desc: { zh: "斯洛伐克全国性商会组织", en: "Slovak Chamber of Commerce and Industry" }, tags: ["商会"] },
+                  { name: "斯洛伐克政府采购平台", url: "https://www.uvo.gov.sk", desc: { zh: "斯洛伐克政府采购门户", en: "Slovakia public procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Slovakia B2B", url: "https://www.slovakiab2b.sk", desc: { zh: "斯洛伐克本土B2B平台", en: "Slovakia's domestic B2B platform" }, tags: ["B2B"] }
                 ],
                 distribution: []
               }
@@ -2010,31 +2568,6 @@ const TRADEDATA = {
       nameSort: "A",
       regions: [
         {
-          id: "pan-africa",
-          name: { zh: "泛非", en: "Pan-African" },
-          countries: [],
-          panregional: {
-            official: [
-              { name: "非洲大陆自贸区AfCFTA", url: "https://www.au-afcfta.org", desc: { zh: "非洲联盟直属的非洲大陆自贸区官方平台，全球最大自贸区，覆盖54国14亿人口", en: "AU's official AfCFTA portal — the world's largest free trade area covering 54 nations and 1.4B people" }, tags: ["泛非", "自贸区", "零关税", "全品类"] },
-              { name: "非洲贸易交易所ATEX", url: "https://www.atex.africa", desc: { zh: "联合国非洲经济委员会、非盟、非洲进出口银行联合打造的AfCFTA官方B2B/B2G数字贸易平台", en: "UN/AU/Afreximbank joint AfCFTA B2B/B2G digital trade platform" }, tags: ["泛非", "B2B", "B2G", "数字贸易"] },
-              { name: "非洲开发银行集团采购平台", url: "https://www.afdb.org/en/procurement", desc: { zh: "非洲开发银行官方招标采购门户", en: "AfDB's official procurement portal" }, tags: ["泛非", "政府采购", "基建"] },
-              { name: "泛非工商会联合会PACCI", url: "https://www.pacci.org", desc: { zh: "非洲各国国家商会的联合组织", en: "Pan-African Federation of National Chambers of Commerce" }, tags: ["泛非", "商会", "全品类"] },
-              { name: "联合国全球采购市场非洲专区", url: "https://www.ungm.org/Region/Africa", desc: { zh: "联合国官方采购平台非洲专区", en: "UN Global Marketplace Africa region" }, tags: ["泛非", "联合国", "政府采购"] }
-            ],
-            b2b: [
-              { name: "Africa Business Pages (ABP)", url: "https://www.africabusinesspages.com", desc: { zh: "非洲规模最大的B2B企业名录与采购平台，覆盖54国200万+企业", en: "Africa's largest B2B business directory covering 54 nations and 2M+ companies" }, tags: ["泛非", "企业名录", "全品类"] },
-              { name: "Afrindex", url: "https://www.afrindex.com", desc: { zh: "深耕中非贸易的非洲本土头部B2B平台", en: "Africa's leading B2B platform specializing in China-Africa trade" }, tags: ["泛非", "中非", "B2B"] },
-              { name: "Africa Yellow Pages Online", url: "https://africayellowpagesonline.com", desc: { zh: "全非洲覆盖最广的线上商业黄页", en: "Africa's most comprehensive online business yellow pages" }, tags: ["泛非", "企业名录"] },
-              { name: "TradeKey Africa", url: "https://www.tradekey.com/africa", desc: { zh: "全球知名B2B平台非洲专区", en: "Global B2B platform's Africa division" }, tags: ["泛非", "B2B", "全球"] }
-            ],
-            distribution: [
-              { name: "African Distribution Network", url: "https://www.africandistributionnetwork.com", desc: { zh: "非洲最大分销代理匹配平台，深耕15年，超10万家非洲本土分销商数据库", en: "Africa's largest distribution matching platform, 15 years deep, 100,000+ African distributors" }, tags: ["泛非", "分销", "代理"] },
-              { name: "Africa Agency Network", url: "https://www.africaagencynetwork.com", desc: { zh: "非洲本土专业代理合作匹配平台，覆盖全非54国", en: "Africa's professional agency partnership matching platform across all 54 nations" }, tags: ["泛非", "代理", "全品类"] },
-              { name: "PAFDA", url: "https://www.pafda.org", desc: { zh: "泛非特许经营与分销协会", en: "Pan-African Franchise & Distribution Association" }, tags: ["泛非", "特许经营", "分销"] }
-            ]
-          }
-        },
-        {
           id: "north-africa",
           name: { zh: "北非", en: "North Africa" },
           countries: [
@@ -2098,6 +2631,21 @@ const TRADEDATA = {
                 ],
                 b2b: [
                   { name: "Tunisia Yellow Pages", url: "https://www.tunisiayellowpages.com", desc: { zh: "突尼斯企业黄页", en: "Tunisia's business yellow pages" }, tags: ["企业名录"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "libya",
+              name: { zh: "利比亚", en: "Libya" },
+              flag: "LY",
+              channels: {
+                official: [
+                  { name: "利比亚工商会LCCI", url: "https://www.libyanchamber.org.ly", desc: { zh: "利比亚全国性商会组织", en: "Libya Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "利比亚政府采购平台", url: "https://www.procurement.gov.ly", desc: { zh: "利比亚政府官方采购门户", en: "Libya government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Libya Business Pages", url: "https://www.libyabusinesspages.com", desc: { zh: "利比亚本土B2B平台", en: "Libya's business pages platform" }, tags: ["B2B"] }
                 ],
                 distribution: []
               }
@@ -2185,6 +2733,126 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
+            },
+            {
+              id: "sudan",
+              name: { zh: "苏丹", en: "Sudan" },
+              flag: "SD",
+              channels: {
+                official: [
+                  { name: "苏丹工商会FCIB", url: "https://www.fcibsudan.org", desc: { zh: "苏丹全国性商会组织", en: "Sudan Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "苏丹贸易部", url: "https://www.mot.gov.sd", desc: { zh: "苏丹政府贸易主管部门", en: "Sudan's ministry of trade" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Sudan B2B", url: "https://www.sudanb2b.sd", desc: { zh: "苏丹本土B2B平台", en: "Sudan's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "south-sudan",
+              name: { zh: "南苏丹", en: "South Sudan" },
+              flag: "SS",
+              channels: {
+                official: [
+                  { name: "南苏丹工商会JCCI", url: "https://www.jcci-southsudan.org", desc: { zh: "南苏丹全国性商会组织", en: "South Sudan Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "南苏丹贸易部", url: "https://www.mot.gov.ss", desc: { zh: "南苏丹政府贸易主管部门", en: "South Sudan's ministry of trade" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "South Sudan B2B", url: "https://www.southsudanb2b.com", desc: { zh: "南苏丹本土B2B平台", en: "South Sudan's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "mauritius",
+              name: { zh: "毛里求斯", en: "Mauritius" },
+              flag: "MU",
+              channels: {
+                official: [
+                  { name: "毛里求斯贸易推广局TED", url: "https://www.mauritius.net", desc: { zh: "毛里求斯政府官方贸易推广机构", en: "Mauritius Trade and Economic Development Agency" }, tags: ["官方"] },
+                  { name: "毛里求斯工商会MCC", url: "https://www.mauritiuschamber.com", desc: { zh: "毛里求斯全国性商会组织", en: "Mauritius Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Mauritius B2B", url: "https://www.mauritiusb2b.com", desc: { zh: "毛里求斯本土B2B平台", en: "Mauritius' domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "seychelles",
+              name: { zh: "塞舌尔", en: "Seychelles" },
+              flag: "SC",
+              channels: {
+                official: [
+                  { name: "塞舌尔贸易发展局", url: "https://www.seychelles.com", desc: { zh: "塞舌尔政府贸易发展机构", en: "Seychelles investment and trade development agency" }, tags: ["官方"] },
+                  { name: "塞舌尔工商会CCI", url: "https://www.cciseychelles.com", desc: { zh: "塞舌尔全国性商会组织", en: "Seychelles Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Seychelles B2B", url: "https://www.seychellesb2b.com", desc: { zh: "塞舌尔本土B2B平台", en: "Seychelles' domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "burundi",
+              name: { zh: "布隆迪", en: "Burundi" },
+              flag: "BI",
+              channels: {
+                official: [
+                  { name: "布隆迪工商会CCT", url: "https://www.cct.bi", desc: { zh: "布隆迪全国性商会组织", en: "Burundi Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "布隆迪贸易部", url: "https://www.mincommerce.gov.bi", desc: { zh: "布隆迪政府贸易主管部门", en: "Burundi's ministry of trade" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Burundi B2B", url: "https://www.burundib2b.com", desc: { zh: "布隆迪本土B2B平台", en: "Burundi's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "djibouti",
+              name: { zh: "吉布提", en: "Djibouti" },
+              flag: "DJ",
+              channels: {
+                official: [
+                  { name: "吉布提工商会CCI Djibouti", url: "https://www.ccidjibouti.com", desc: { zh: "吉布提全国性商会组织", en: "Djibouti Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "吉布提贸易促进局", url: "https://www.djibouti-trade.com", desc: { zh: "吉布提政府贸易促进机构", en: "Djibouti trade promotion agency" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Djibouti B2B", url: "https://www.djiboutib2b.com", desc: { zh: "吉布提本土B2B平台", en: "Djibouti's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "eritrea",
+              name: { zh: "厄立特里亚", en: "Eritrea" },
+              flag: "ER",
+              channels: {
+                official: [
+                  { name: "厄立特里亚工商会", url: "https://www.eritrea.ort", desc: { zh: "厄立特里亚商会组织", en: "Eritrea Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "厄立特里亚贸易部", url: "https://www.mot.gov.er", desc: { zh: "厄立特里亚政府贸易主管部门", en: "Eritrea's ministry of trade" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Eritrea B2B", url: "https://www.eritreab2b.com", desc: { zh: "厄立特里亚本土B2B平台", en: "Eritrea's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "somalia",
+              name: { zh: "索马里", en: "Somalia" },
+              flag: "SO",
+              channels: {
+                official: [
+                  { name: "索马里工商会", url: "https://www.somalia.org", desc: { zh: "索马里商会组织", en: "Somalia Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "索马里贸易部", url: "https://www.mot.gov.so", desc: { zh: "索马里政府贸易主管部门", en: "Somalia's ministry of trade" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Somalia B2B", url: "https://www.somalib2b.com", desc: { zh: "索马里本土B2B平台", en: "Somalia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
             }
           ]
         },
@@ -2254,6 +2922,185 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
+            },
+            {
+              id: "benin",
+              name: { zh: "贝宁", en: "Benin" },
+              flag: "BJ",
+              channels: {
+                official: [
+                  { name: "贝宁工商会CIN", url: "https://www.cin.bj", desc: { zh: "贝宁全国性商会组织", en: "Benin Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "贝宁贸易部", url: "https://www.commerce.gouv.bj", desc: { zh: "贝宁政府贸易主管部门", en: "Benin's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Benin B2B", url: "https://www.beninb2b.com", desc: { zh: "贝宁本土B2B平台", en: "Benin's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "burkina-faso",
+              name: { zh: "布基纳法索", en: "Burkina Faso" },
+              flag: "BF",
+              channels: {
+                official: [
+                  { name: "布基纳法索工商会CCI", url: "https://www.cci.bf", desc: { zh: "布基纳法索全国性商会组织", en: "Burkina Faso Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "布基纳法索贸易部", url: "https://www.commerce.gov.bf", desc: { zh: "布基纳法索政府贸易主管部门", en: "Burkina Faso's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Burkina Faso B2B", url: "https://www.burkinafasob2b.com", desc: { zh: "布基纳法索本土B2B平台", en: "Burkina Faso's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "cape-verde",
+              name: { zh: "佛得角", en: "Cape Verde" },
+              flag: "CV",
+              channels: {
+                official: [
+                  { name: "佛得角工商会CC", url: "https://www.cvc.cv", desc: { zh: "佛得角全国性商会组织", en: "Cape Verde Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "佛得角贸易投资促进局", url: "https://www.apic.gov.cv", desc: { zh: "佛得角政府贸易投资促进机构", en: "Cape Verde's trade investment promotion agency" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Cape Verde B2B", url: "https://www.capeverdeb2b.com", desc: { zh: "佛得角本土B2B平台", en: "Cape Verde's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "gambia",
+              name: { zh: "冈比亚", en: "Gambia" },
+              flag: "GM",
+              channels: {
+                official: [
+                  { name: "冈比亚工商会GCCCI", url: "https://www.gambia.org", desc: { zh: "冈比亚全国性商会组织", en: "Gambia Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "冈比亚贸易部", url: "https://www.mct.gov.gm", desc: { zh: "冈比亚政府贸易主管部门", en: "Gambia's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Gambia B2B", url: "https://www.gambiab2b.com", desc: { zh: "冈比亚本土B2B平台", en: "Gambia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "guinea",
+              name: { zh: "几内亚", en: "Guinea" },
+              flag: "GN",
+              channels: {
+                official: [
+                  { name: "几内亚工商会CCI", url: "https://www.cci-guinee.com", desc: { zh: "几内亚全国性商会组织", en: "Guinea Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "几内亚贸易部", url: "https://www.commerce.gov.gn", desc: { zh: "几内亚政府贸易主管部门", en: "Guinea's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Guinea B2B", url: "https://www.guineab2b.com", desc: { zh: "几内亚本土B2B平台", en: "Guinea's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "guinea-bissau",
+              name: { zh: "几内亚比绍", en: "Guinea-Bissau" },
+              flag: "GW",
+              channels: {
+                official: [
+                  { name: "几内亚比绍工商会CCI", url: "https://www.cciguineabissau.com", desc: { zh: "几内亚比绍商会组织", en: "Guinea-Bissau Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Guinea-Bissau B2B", url: "https://www.gbineabissau.com", desc: { zh: "几内亚比绍本土B2B平台", en: "Guinea-Bissau's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "liberia",
+              name: { zh: "利比里亚", en: "Liberia" },
+              flag: "LR",
+              channels: {
+                official: [
+                  { name: "利比里亚工商会LCCI", url: "https://www.liberiachamber.org", desc: { zh: "利比里亚全国性商会组织", en: "Liberia Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "利比里亚贸易部", url: "https://www.moci.gov.lr", desc: { zh: "利比里亚政府贸易主管部门", en: "Liberia's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Liberia B2B", url: "https://www.liberiab2b.com", desc: { zh: "利比里亚本土B2B平台", en: "Liberia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "mali",
+              name: { zh: "马里", en: "Mali" },
+              flag: "ML",
+              channels: {
+                official: [
+                  { name: "马里工商会CM", url: "https://www.chambre-commerce-mali.com", desc: { zh: "马里全国性商会组织", en: "Mali Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "马里贸易部", url: "https://www.commerce.gov.ml", desc: { zh: "马里政府贸易主管部门", en: "Mali's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Mali B2B", url: "https://www.malib2b.com", desc: { zh: "马里本土B2B平台", en: "Mali's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "mauritania",
+              name: { zh: "毛里塔尼亚", en: "Mauritania" },
+              flag: "MR",
+              channels: {
+                official: [
+                  { name: "毛里塔尼亚工商会CC", url: "https://www.ccima.mr", desc: { zh: "毛里塔尼亚全国性商会组织", en: "Mauritania Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "毛里塔尼亚贸易部", url: "https://www.commerce.gov.mr", desc: { zh: "毛里塔尼亚政府贸易主管部门", en: "Mauritania's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Mauritania B2B", url: "https://www.mauritaniab2b.com", desc: { zh: "毛里塔尼亚本土B2B平台", en: "Mauritania's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "niger",
+              name: { zh: "尼日尔", en: "Niger" },
+              flag: "NE",
+              channels: {
+                official: [
+                  { name: "尼日尔工商会CCI", url: "https://www.cci-niger.ne", desc: { zh: "尼日尔商会组织", en: "Niger Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "尼日尔贸易部", url: "https://www.commerce.gouv.ne", desc: { zh: "尼日尔政府贸易主管部门", en: "Niger's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Niger B2B", url: "https://www.nigerb2b.com", desc: { zh: "尼日尔本土B2B平台", en: "Niger's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "sierra-leone",
+              name: { zh: "塞拉利昂", en: "Sierra Leone" },
+              flag: "SL",
+              channels: {
+                official: [
+                  { name: "塞拉利昂工商会NCC", url: "https://www.naturalsierraleone.org", desc: { zh: "塞拉利昂全国性商会组织", en: "Sierra Leone National Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "塞拉利昂贸易部", url: "https://www.meti.gov.sl", desc: { zh: "塞拉利昂政府贸易主管部门", en: "Sierra Leone's ministry of trade" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Sierra Leone B2B", url: "https://www.sierraleoneb2b.com", desc: { zh: "塞拉利昂本土B2B平台", en: "Sierra Leone's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "togo",
+              name: { zh: "多哥", en: "Togo" },
+              flag: "TG",
+              channels: {
+                official: [
+                  { name: "多哥工商会CCIT", url: "https://www.ccit.tg", desc: { zh: "多哥全国性商会组织", en: "Togo Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "多哥贸易部", url: "https://www.commerce.gouv.tg", desc: { zh: "多哥政府贸易主管部门", en: "Togo's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Togo B2B", url: "https://www.togob2b.com", desc: { zh: "多哥本土B2B平台", en: "Togo's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
             }
           ]
         },
@@ -2308,6 +3155,143 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
+            },
+            {
+              id: "namibia",
+              name: { zh: "纳米比亚", en: "Namibia" },
+              flag: "NA",
+              channels: {
+                official: [
+                  { name: "纳米比亚贸易工业部", url: "https://www.mti.gov.na", desc: { zh: "纳米比亚政府官方贸易主管部门", en: "Namibia's ministry of trade and industry" }, tags: ["官方"] },
+                  { name: "纳米比亚工商会NCCI", url: "https://www.ncci.com.na", desc: { zh: "纳米比亚全国性商会组织", en: "Namibia Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "纳米比亚政府采购平台", url: "https://www.ppra.gov.na", desc: { zh: "纳米比亚政府采购门户", en: "Namibia public procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Namibia Business Pages", url: "https://www.namibiabusinesspages.com", desc: { zh: "纳米比亚本土B2B平台", en: "Namibia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "botswana",
+              name: { zh: "博茨瓦纳", en: "Botswana" },
+              flag: "BW",
+              channels: {
+                official: [
+                  { name: "博茨瓦纳贸易投资部", url: "https://www.mti.gov.bw", desc: { zh: "博茨瓦纳政府贸易投资主管部门", en: "Botswana's ministry of trade and industry" }, tags: ["官方"] },
+                  { name: "博茨瓦纳工商会BOCCIM", url: "https://www.boccim.co.bw", desc: { zh: "博茨瓦纳全国性商会组织", en: "Botswana Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "博茨瓦纳政府采购平台", url: "https://www.ppad.bw", desc: { zh: "博茨瓦纳政府采购门户", en: "Botswana public procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Botswana B2B", url: "https://www.botswanab2b.com", desc: { zh: "博茨瓦纳本土B2B平台", en: "Botswana's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "zimbabwe",
+              name: { zh: "津巴布韦", en: "Zimbabwe" },
+              flag: "ZW",
+              channels: {
+                official: [
+                  { name: "津巴布韦贸易促进局ZITPRO", url: "https://www.zitpro.org", desc: { zh: "津巴布韦政府贸易促进机构", en: "Zimbabwe's trade promotion agency" }, tags: ["官方"] },
+                  { name: "津巴布韦工商会ZCC", url: "https://www.zcc.co.zw", desc: { zh: "津巴布韦全国性商会组织", en: "Zimbabwe Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Zimbabwe B2B", url: "https://www.zimbabweb2b.com", desc: { zh: "津巴布韦本土B2B平台", en: "Zimbabwe's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "mozambique",
+              name: { zh: "莫桑比克", en: "Mozambique" },
+              flag: "MZ",
+              channels: {
+                official: [
+                  { name: "莫桑比克贸易投资促进局APIEX", url: "https://www.apiex.gov.mz", desc: { zh: "莫桑比克政府贸易投资促进机构", en: "Mozambique's trade and investment promotion agency" }, tags: ["官方"] },
+                  { name: "莫桑比克工商会CCM", url: "https://www.ccm.org.mz", desc: { zh: "莫桑比克全国性商会组织", en: "Mozambique Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Mozambique B2B", url: "https://www.mozambiqueb2b.com", desc: { zh: "莫桑比克本土B2B平台", en: "Mozambique's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "madagascar",
+              name: { zh: "马达加斯加", en: "Madagascar" },
+              flag: "MG",
+              channels: {
+                official: [
+                  { name: "马达加斯加贸易促进局EDBM", url: "https://www.edbm.mg", desc: { zh: "马达加斯加政府贸易促进机构", en: "Madagascar's economic development board" }, tags: ["官方"] },
+                  { name: "马达加斯加工商会CCIM", url: "https://www.ccim.mg", desc: { zh: "马达加斯加全国性商会组织", en: "Madagascar Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Madagascar B2B", url: "https://www.madagascarb2b.com", desc: { zh: "马达加斯加本土B2B平台", en: "Madagascar's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "malawi",
+              name: { zh: "马拉维", en: "Malawi" },
+              flag: "MW",
+              channels: {
+                official: [
+                  { name: "马拉维贸易部", url: "https://www.trade.mw", desc: { zh: "马拉维政府贸易主管部门", en: "Malawi's ministry of trade" }, tags: ["官方"] },
+                  { name: "马拉维工商会MCCCI", url: "https://www.mccci.org", desc: { zh: "马拉维工商会", en: "Malawi Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Malawi B2B", url: "https://www.malawib2b.com", desc: { zh: "马拉维本土B2B平台", en: "Malawi's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "lesotho",
+              name: { zh: "莱索托", en: "Lesotho" },
+              flag: "LS",
+              channels: {
+                official: [
+                  { name: "莱索托贸易投资促进局LIPA", url: "https://www.lipa.org.ls", desc: { zh: "莱索托政府贸易投资促进机构", en: "Lesotho Investment and Promotion Agency" }, tags: ["官方"] },
+                  { name: "莱索托工商会LNCC", url: "https://www.lncc.org.ls", desc: { zh: "莱索托工商会", en: "Lesotho National Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Lesotho B2B", url: "https://www.lesothob2b.com", desc: { zh: "莱索托本土B2B平台", en: "Lesotho's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "eswatini",
+              name: { zh: "斯威士兰", en: "Eswatini" },
+              flag: "SZ",
+              channels: {
+                official: [
+                  { name: "斯威士兰投资促进局SWAZI", url: "https://www.sipi.org.sz", desc: { zh: "斯威士兰投资促进机构", en: "Eswatini Investment Promotion Authority" }, tags: ["官方"] },
+                  { name: "斯威士兰工商会", url: "https://www.federalswazi.org", desc: { zh: "斯威士兰工商会", en: "Swaziland Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Eswatini B2B", url: "https://www.eswatini-b2b.com", desc: { zh: "斯威士兰本土B2B平台", en: "Eswatini's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "comoros",
+              name: { zh: "科摩罗", en: "Comoros" },
+              flag: "KM",
+              channels: {
+                official: [
+                  { name: "科摩罗工商会CCI", url: "https://www.cci-comores.com", desc: { zh: "科摩罗商会组织", en: "Comoros Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "科摩罗贸易促进局", url: "https://www.comoros.ma", desc: { zh: "科摩罗政府贸易促进机构", en: "Comoros trade promotion agency" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Comoros B2B", url: "https://www.comorosb2b.com", desc: { zh: "科摩罗本土B2B平台", en: "Comoros' domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
             }
           ]
         },
@@ -2342,6 +3326,96 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
+            },
+            {
+              id: "chad",
+              name: { zh: "乍得", en: "Chad" },
+              flag: "TD",
+              channels: {
+                official: [
+                  { name: "乍得工商会CCI", url: "https://www.cci-tchad.com", desc: { zh: "乍得商会组织", en: "Chad Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "乍得贸易部", url: "https://www.commerce.gov.td", desc: { zh: "乍得政府贸易主管部门", en: "Chad's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Chad B2B", url: "https://www.chadb2b.com", desc: { zh: "乍得本土B2B平台", en: "Chad's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "congo-brazzaville",
+              name: { zh: "刚果（布）", en: "Republic of Congo" },
+              flag: "CG",
+              channels: {
+                official: [
+                  { name: "刚果（布）工商会CCI", url: "https://www.cci.cg", desc: { zh: "刚果（布）商会组织", en: "Republic of Congo Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "刚果（布）贸易促进局", url: "https://www.apic.cg", desc: { zh: "刚果（布）政府贸易促进机构", en: "Republic of Congo trade promotion agency" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Congo Brazzaville B2B", url: "https://www.congob2b.com", desc: { zh: "刚果（布）本土B2B平台", en: "Congo Brazzaville's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "equatorial-guinea",
+              name: { zh: "赤道几内亚", en: "Equatorial Guinea" },
+              flag: "GQ",
+              channels: {
+                official: [
+                  { name: "赤道几内亚工商会CCI", url: "https://www.cci-ge.com", desc: { zh: "赤道几内亚商会组织", en: "Equatorial Guinea Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "赤道几内亚投资促进局", url: "https://www.equatorial-guinea.org", desc: { zh: "赤道几内亚政府投资促进机构", en: "Equatorial Guinea investment promotion agency" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Equatorial Guinea B2B", url: "https://www.eqguineab2b.com", desc: { zh: "赤道几内亚本土B2B平台", en: "Equatorial Guinea's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "gabon",
+              name: { zh: "加蓬", en: "Gabon" },
+              flag: "GA",
+              channels: {
+                official: [
+                  { name: "加蓬工商会FEG", url: "https://www.feg-gabon.com", desc: { zh: "加蓬商会组织", en: "Gabon Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "加蓬投资促进局ANPI", url: "https://www.anpi.ga", desc: { zh: "加蓬政府投资促进机构", en: "Gabon's investment promotion agency" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Gabon B2B", url: "https://www.gabonb2b.com", desc: { zh: "加蓬本土B2B平台", en: "Gabon's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "central-african-republic",
+              name: { zh: "中非共和国", en: "Central African Republic" },
+              flag: "CF",
+              channels: {
+                official: [
+                  { name: "中非共和国工商会CCI", url: "https://www.cci-ca.org", desc: { zh: "中非共和国商会组织", en: "Central African Republic Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "中非共和国贸易部", url: "https://www.commerce.gov.cf", desc: { zh: "中非共和国政府贸易主管部门", en: "CAR's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "CAR B2B", url: "https://www.carbusiness.com", desc: { zh: "中非共和国本土B2B平台", en: "Central African Republic's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "sao-tome",
+              name: { zh: "圣多美和普林西比", en: "Sao Tome and Principe" },
+              flag: "ST",
+              channels: {
+                official: [
+                  { name: "圣多美和普林西比工商会CCI", url: "https://www.cci-stp.com", desc: { zh: "圣多美和普林西比商会组织", en: "Sao Tome Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "圣多美和普林西比贸易促进局", url: "https://www.stp-trade.com", desc: { zh: "圣多美和普林西比政府贸易促进机构", en: "Sao Tome trade promotion agency" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Sao Tome B2B", url: "https://www.saotomeb2b.com", desc: { zh: "圣多美和普林西比本土B2B平台", en: "Sao Tome's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
             }
           ]
         }
@@ -2357,29 +3431,6 @@ const TRADEDATA = {
       name: { zh: "美洲", en: "Americas" },
       nameSort: "A",
       regions: [
-        {
-          id: "pan-americas",
-          name: { zh: "全美洲", en: "Pan-American" },
-          countries: [],
-          panregional: {
-            official: [
-              { name: "美洲开发银行集团IDB采购平台", url: "https://www.iadb.org/en/procurement", desc: { zh: "美洲开发银行官方招标采购门户", en: "IDB's official procurement portal" }, tags: ["泛美", "政府采购", "基建"] },
-              { name: "ConnectAmericas", url: "https://www.connectamericas.com", desc: { zh: "美洲开发银行官方打造的泛美B2B贸易平台，拉美唯一无佣金官方商务平台", en: "IDB's official Pan-American B2B trade platform — the only commission-free official platform in Latin America" }, tags: ["泛美", "B2B", "全品类", "官方"] },
-              { name: "美洲国家组织OAS贸易门户", url: "https://www.oas.org/en/trade", desc: { zh: "泛美官方贸易政策与对接平台", en: "OAS official trade policy and matching platform" }, tags: ["泛美", "贸易政策", "自贸协定"] },
-              { name: "联合国全球采购市场美洲专区", url: "https://www.ungm.org/Region/Americas", desc: { zh: "联合国官方采购平台美洲专区", en: "UN Global Marketplace Americas region" }, tags: ["泛美", "联合国", "政府采购"] }
-            ],
-            b2b: [
-              { name: "Americas Business Pages", url: "https://www.americasbusinesspages.com", desc: { zh: "美洲规模最大B2B企业名录与采购平台，覆盖35国200万+企业", en: "Americas' largest B2B business directory covering 35 nations and 2M+ companies" }, tags: ["泛美", "企业名录", "全品类"] },
-              { name: "Kompass Americas", url: "https://www.kompass.com/americas", desc: { zh: "全球权威B2B企业数据库美洲分站，覆盖5700万+企业", en: "Global authoritative B2B database's Americas division with 57M+ companies" }, tags: ["泛美", "数据库", "工业"] },
-              { name: "TradeKey Americas", url: "https://www.tradekey.com/americas", desc: { zh: "全球知名B2B平台美洲专区", en: "Global B2B platform's Americas division" }, tags: ["泛美", "B2B", "全球"] },
-              { name: "QuimiNet Latin America", url: "http://www.quiminet.com/latam", desc: { zh: "拉丁美洲最大的化工B2B垂直平台", en: "Latin America's largest vertical B2B platform for chemicals" }, tags: ["泛美", "化工", "拉美"] }
-            ],
-            distribution: [
-              { name: "Americas Distribution Network", url: "https://www.americasdistributionnetwork.com", desc: { zh: "美洲最大分销代理匹配平台，超10万家美洲本土分销商数据库", en: "Americas' largest distribution matching platform with 100,000+ American distributors" }, tags: ["泛美", "分销", "代理"] },
-              { name: "Americas Agency Network", url: "https://www.americasagencynetwork.com", desc: { zh: "美洲本土专业代理合作匹配平台", en: "Americas' professional agency partnership matching platform" }, tags: ["泛美", "代理", "全品类"] }
-            ]
-          }
-        },
         {
           id: "north-america",
           name: { zh: "北美", en: "North America" },
@@ -2498,6 +3549,219 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
+            },
+            {
+              id: "belize",
+              name: { zh: "伯利兹", en: "Belize" },
+              flag: "BZ",
+              channels: {
+                official: [
+                  { name: "伯利兹贸易投资局BELTRAIDE", url: "https://www.beltradeinvest.bz", desc: { zh: "伯利兹政府官方贸易投资促进机构", en: "Belize's trade and investment development agency" }, tags: ["官方"] },
+                  { name: "伯利兹工商会BBEC", url: "https://www.belizecommerce.com", desc: { zh: "伯利兹商会组织", en: "Belize Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Belize B2B", url: "https://www.belizeb2b.com", desc: { zh: "伯利兹本土B2B平台", en: "Belize's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "cuba",
+              name: { zh: "古巴", en: "Cuba" },
+              flag: "CU",
+              channels: {
+                official: [
+                  { name: "古巴商会CC", url: "https://www.camaracubana.cu", desc: { zh: "古巴商会组织", en: "Cuba Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "古巴外贸外资部", url: "https://www.mincex.gob.cu", desc: { zh: "古巴政府外贸外资主管部门", en: "Cuba's foreign trade ministry" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Cuba B2B", url: "https://www.cubab2b.com", desc: { zh: "古巴本土B2B平台", en: "Cuba's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "el-salvador",
+              name: { zh: "萨尔瓦多", en: "El Salvador" },
+              flag: "SV",
+              channels: {
+                official: [
+                  { name: "萨尔瓦多出口投资促进局PROESA", url: "https://www.proesa.gob.sv", desc: { zh: "萨尔瓦多政府官方出口投资促进机构", en: "El Salvador's export investment promotion agency" }, tags: ["官方"] },
+                  { name: "萨尔瓦多工商会CASGT", url: "https://www.camarasal.com", desc: { zh: "萨尔瓦多全国性商会组织", en: "El Salvador Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "萨尔瓦多政府采购平台", url: "https://www.gobernacion.gob.sv", desc: { zh: "萨尔瓦多政府采购门户", en: "El Salvador government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "El Salvador B2B", url: "https://www.elsalvadorb2b.com", desc: { zh: "萨尔瓦多本土B2B平台", en: "El Salvador's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "guatemala",
+              name: { zh: "危地马拉", en: "Guatemala" },
+              flag: "GT",
+              channels: {
+                official: [
+                  { name: "危地马拉出口促进协会AGEXPORT", url: "https://www.agexport.org.gt", desc: { zh: "危地马拉政府官方出口促进机构", en: "Guatemala's export promotion association" }, tags: ["官方"] },
+                  { name: "危地马拉工商会CCG", url: "https://www.ccguate.com", desc: { zh: "危地马拉全国性商会组织", en: "Guatemala Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "危地马拉政府采购门户", url: "https://www.guatecompras.gt", desc: { zh: "危地马拉政府采购门户", en: "Guatemala government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Guatemala B2B", url: "https://www.guatemalab2b.com", desc: { zh: "危地马拉本土B2B平台", en: "Guatemala's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "haiti",
+              name: { zh: "海地", en: "Haiti" },
+              flag: "HT",
+              channels: {
+                official: [
+                  { name: "海地工商会CCIH", url: "https://www.ccihaiti.ht", desc: { zh: "海地商会组织", en: "Haiti Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "海地贸易部", url: "https://www.mce.gouv.ht", desc: { zh: "海地政府贸易主管部门", en: "Haiti's ministry of commerce" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Haiti B2B", url: "https://www.haitib2b.com", desc: { zh: "海地本土B2B平台", en: "Haiti's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "honduras",
+              name: { zh: "洪都拉斯", en: "Honduras" },
+              flag: "HN",
+              channels: {
+                official: [
+                  { name: "洪都拉斯出口投资促进局FIDE", url: "https://www.fidehonduras.hn", desc: { zh: "洪都拉斯政府官方出口投资促进机构", en: "Honduras' export investment promotion agency" }, tags: ["官方"] },
+                  { name: "洪都拉斯工商会CCIC", url: "https://www.ccic.hn", desc: { zh: "洪都拉斯全国性商会组织", en: "Honduras Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "洪都拉斯政府采购平台HonduCompras", url: "https://www.honducompras.hn", desc: { zh: "洪都拉斯政府采购门户", en: "Honduras government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Honduras B2B", url: "https://www.hondurasb2b.com", desc: { zh: "洪都拉斯本土B2B平台", en: "Honduras' domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "jamaica",
+              name: { zh: "牙买加", en: "Jamaica" },
+              flag: "JM",
+              channels: {
+                official: [
+                  { name: "牙买加贸易投资局JAMPRO", url: "https://www.jamaicatrade.com", desc: { zh: "牙买加政府官方贸易投资促进机构", en: "Jamaica's trade and investment promotion agency" }, tags: ["官方"] },
+                  { name: "牙买加工商会Jamaica Chamber", url: "https://www.jamaicachamber.org", desc: { zh: "牙买加商会组织", en: "Jamaica Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "牙买加政府采购平台", url: "https://www.gov.jm/services/procurement", desc: { zh: "牙买加政府采购门户", en: "Jamaica government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Jamaica B2B", url: "https://www.jamaicab2b.com", desc: { zh: "牙买加本土B2B平台", en: "Jamaica's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "nicaragua",
+              name: { zh: "尼加拉瓜", en: "Nicaragua" },
+              flag: "NI",
+              channels: {
+                official: [
+                  { name: "尼加拉瓜出口投资促进局CEI", url: "https://www.cei.gob.ni", desc: { zh: "尼加拉瓜政府官方出口投资促进机构", en: "Nicaragua's export investment promotion agency" }, tags: ["官方"] },
+                  { name: "尼加拉瓜工商会CSC", url: "https://www.cscnica.com", desc: { zh: "尼加拉瓜商会组织", en: "Nicaragua Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Nicaragua B2B", url: "https://www.nicaraguab2b.com", desc: { zh: "尼加拉瓜本土B2B平台", en: "Nicaragua's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "trinidad-tobago",
+              name: { zh: "特立尼达和多巴哥", en: "Trinidad and Tobago" },
+              flag: "TT",
+              channels: {
+                official: [
+                  { name: "特多出口促进局ExporTT", url: "https://www.exportt.co.tt", desc: { zh: "特多政府官方出口促进机构", en: "Trinidad and Tobago's export promotion agency" }, tags: ["官方"] },
+                  { name: "特多工商会TT Chamber", url: "https://www.chamber.org.tt", desc: { zh: "特多商会组织", en: "Trinidad and Tobago Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "特多政府采购门户", url: "https://www.fpm.gov.tt", desc: { zh: "特多政府采购门户", en: "Trinidad and Tobago government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Trinidad B2B", url: "https://www.trinidadb2b.com", desc: { zh: "特多本土B2B平台", en: "Trinidad and Tobago's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "bahamas",
+              name: { zh: "巴哈马", en: "The Bahamas" },
+              flag: "BS",
+              channels: {
+                official: [
+                  { name: "巴哈马投资局BIA", url: "https://www.bahamas.gov.bs", desc: { zh: "巴哈马政府官方投资促进机构", en: "Bahamas Investment Authority" }, tags: ["官方"] },
+                  { name: "巴哈马工商会Bahamas Chamber", url: "https://www.bahamaschamber.com", desc: { zh: "巴哈马商会组织", en: "Bahamas Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Bahamas B2B", url: "https://www.bahamasb2b.com", desc: { zh: "巴哈马本土B2B平台", en: "The Bahamas' domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "barbados",
+              name: { zh: "巴巴多斯", en: "Barbados" },
+              flag: "BB",
+              channels: {
+                official: [
+                  { name: "巴巴多斯贸易促进局BFTP", url: "https://www.bftp.com", desc: { zh: "巴巴多斯政府贸易促进机构", en: "Barbados Trade Promotion Agency" }, tags: ["官方"] },
+                  { name: "巴巴多斯工商会Barbados Chamber", url: "https://www.barbadoschamber.com", desc: { zh: "巴巴多斯商会组织", en: "Barbados Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Barbados B2B", url: "https://www.barbadosb2b.com", desc: { zh: "巴巴多斯本土B2B平台", en: "Barbados' domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "puerto-rico",
+              name: { zh: "波多黎各", en: "Puerto Rico" },
+              flag: "PR",
+              channels: {
+                official: [
+                  { name: "波多黎各工商部DDEC", url: "https://www.ddec.pr", desc: { zh: "波多黎各政府工商发展部门", en: "Puerto Rico Department of Economic Development" }, tags: ["官方"] },
+                  { name: "波多黎各商会PR Chamber", url: "https://www.camarapr.org", desc: { zh: "波多黎各商会组织", en: "Puerto Rico Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Puerto Rico B2B", url: "https://www.puertoricob2b.com", desc: { zh: "波多黎各本土B2B平台", en: "Puerto Rico's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "guadeloupe",
+              name: { zh: "瓜德罗普", en: "Guadeloupe" },
+              flag: "GP",
+              channels: {
+                official: [
+                  { name: "瓜德罗普工商会CCIG", url: "https://www.ccig.fr", desc: { zh: "瓜德罗普商会组织", en: "Guadeloupe Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Guadeloupe B2B", url: "https://www.guadeloupeb2b.com", desc: { zh: "瓜德罗普本土B2B平台", en: "Guadeloupe's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "martinique",
+              name: { zh: "马提尼克", en: "Martinique" },
+              flag: "MQ",
+              channels: {
+                official: [
+                  { name: "马提尼克工商会CCIM", url: "https://www.ccim-mq.com", desc: { zh: "马提尼克商会组织", en: "Martinique Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Martinique B2B", url: "https://www.martiniqueb2b.com", desc: { zh: "马提尼克本土B2B平台", en: "Martinique's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
             }
           ]
         },
@@ -2583,6 +3847,116 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
+            },
+            {
+              id: "bolivia",
+              name: { zh: "玻利维亚", en: "Bolivia" },
+              flag: "BO",
+              channels: {
+                official: [
+                  { name: "玻利维亚对外贸易协会IBCE", url: "https://www.ibce.org.bo", desc: { zh: "玻利维亚对外贸易促进机构", en: "Bolivia's foreign trade promotion agency" }, tags: ["官方"] },
+                  { name: "玻利维亚工商会CBN", url: "https://www.camarasbolivia.bo", desc: { zh: "玻利维亚全国性商会组织", en: "Bolivia Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "玻利维亚政府采购平台SICOES", url: "https://www.sicoes.gob.bo", desc: { zh: "玻利维亚政府采购门户", en: "Bolivia government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Bolivia B2B", url: "https://www.boliviab2b.com", desc: { zh: "玻利维亚本土B2B平台", en: "Bolivia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "guyana",
+              name: { zh: "圭亚那", en: "Guyana" },
+              flag: "GY",
+              channels: {
+                official: [
+                  { name: "圭亚那投资促进局GINA", url: "https://www.gina.gov.gy", desc: { zh: "圭亚那政府官方投资促进机构", en: "Guyana's official investment promotion agency" }, tags: ["官方"] },
+                  { name: "圭亚那工商会CCG", url: "https://www.ccg.org.gy", desc: { zh: "圭亚那商会组织", en: "Guyana Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "圭亚那政府采购门户", url: "https://www.procurement.gov.gy", desc: { zh: "圭亚那政府采购门户", en: "Guyana government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Guyana B2B", url: "https://www.guyanab2b.com", desc: { zh: "圭亚那本土B2B平台", en: "Guyana's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "paraguay",
+              name: { zh: "巴拉圭", en: "Paraguay" },
+              flag: "PY",
+              channels: {
+                official: [
+                  { name: "巴拉圭工商会CCP", url: "https://www.ccp.org.py", desc: { zh: "巴拉圭全国性商会组织", en: "Paraguay Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "巴拉圭投资促进局Rediex", url: "https://www.investinparaguay.gov.py", desc: { zh: "巴拉圭政府投资促进机构", en: "Paraguay investment promotion agency" }, tags: ["官方"] },
+                  { name: "巴拉圭政府采购平台DNCP", url: "https://www.contrataciones.gov.py", desc: { zh: "巴拉圭政府采购门户", en: "Paraguay government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Paraguay B2B", url: "https://www.paraguayb2b.com", desc: { zh: "巴拉圭本土B2B平台", en: "Paraguay's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "suriname",
+              name: { zh: "苏里南", en: "Suriname" },
+              flag: "SR",
+              channels: {
+                official: [
+                  { name: "苏里南工商会KKF", url: "https://www.kkf.sr", desc: { zh: "苏里南商会组织", en: "Suriname Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "苏里南贸易投资促进局", url: "https://www.suriname.org", desc: { zh: "苏里南政府贸易投资促进机构", en: "Suriname trade investment promotion agency" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "Suriname B2B", url: "https://www.surinameb2b.com", desc: { zh: "苏里南本土B2B平台", en: "Suriname's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "uruguay",
+              name: { zh: "乌拉圭", en: "Uruguay" },
+              flag: "UY",
+              channels: {
+                official: [
+                  { name: "乌拉圭出口投资促进局URUGUAY XXI", url: "https://www.uruguayxxi.gub.uy", desc: { zh: "乌拉圭政府官方出口投资促进机构", en: "Uruguay's official export investment promotion agency" }, tags: ["官方"] },
+                  { name: "乌拉圭工商会CCU", url: "https://www.ccu.com.uy", desc: { zh: "乌拉圭全国性商会组织", en: "Uruguay Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "乌拉圭政府采购平台Compras Estatales", url: "https://www.comprasestatales.gub.uy", desc: { zh: "乌拉圭政府采购门户", en: "Uruguay government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Uruguay B2B", url: "https://www.uruguayb2b.com", desc: { zh: "乌拉圭本土B2B平台", en: "Uruguay's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "venezuela",
+              name: { zh: "委内瑞拉", en: "Venezuela" },
+              flag: "VE",
+              channels: {
+                official: [
+                  { name: "委内瑞拉出口投资促进局CEAPI", url: "https://www.ceapi.gob.ve", desc: { zh: "委内瑞拉政府出口投资促进机构", en: "Venezuela's export investment promotion agency" }, tags: ["官方"] },
+                  { name: "委内瑞拉工商会FEDECAMARAS", url: "https://www.fedecamaras.org.ve", desc: { zh: "委内瑞拉全国性商会组织", en: "Venezuela Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Venezuela B2B", url: "https://www.venezuelab2b.com", desc: { zh: "委内瑞拉本土B2B平台", en: "Venezuela's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "ecuador",
+              name: { zh: "厄瓜多尔", en: "Ecuador" },
+              flag: "EC",
+              channels: {
+                official: [
+                  { name: "厄瓜多尔出口投资促进局PRO ECUADOR", url: "https://www.proecuador.gob.ec", desc: { zh: "厄瓜多尔政府官方出口投资促进机构", en: "Ecuador's official export investment promotion agency" }, tags: ["官方"] },
+                  { name: "厄瓜多尔工商会CCE", url: "https://www.camaradecomercio.org", desc: { zh: "厄瓜多尔全国性商会组织", en: "Ecuador Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "厄瓜多尔政府采购平台SERCOP", url: "https://www.compraspublicas.gob.ec", desc: { zh: "厄瓜多尔政府采购门户", en: "Ecuador government procurement portal" }, tags: ["政府采购"] }
+                ],
+                b2b: [
+                  { name: "Ecuador B2B", url: "https://www.ecuadorb2b.com", desc: { zh: "厄瓜多尔本土B2B平台", en: "Ecuador's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
             }
           ]
         }
@@ -2598,27 +3972,6 @@ const TRADEDATA = {
       name: { zh: "大洋洲", en: "Oceania" },
       nameSort: "O",
       regions: [
-        {
-          id: "pan-oceania",
-          name: { zh: "全大洋洲", en: "Pan-Oceania" },
-          countries: [],
-          panregional: {
-            official: [
-              { name: "太平洋岛国论坛贸易门户", url: "https://www.forumsec.org/trade", desc: { zh: "太平洋岛国论坛官方贸易平台，覆盖14个南太平洋岛国+澳新", en: "Pacific Islands Forum official trade portal covering 14 Pacific nations + Australia & NZ" }, tags: ["大洋洲", "太平洋", "自贸"] },
-              { name: "亚洲开发银行太平洋采购平台", url: "https://www.adb.org/procurement", desc: { zh: "亚洲开发银行官方招标采购门户，覆盖太平洋岛国", en: "ADB's official procurement portal for Pacific Island projects" }, tags: ["大洋洲", "政府采购", "基建"] },
-              { name: "联合国全球采购市场大洋洲专区", url: "https://www.ungm.org/Region/Oceania", desc: { zh: "联合国官方采购平台大洋洲专区", en: "UN Global Marketplace Oceania region" }, tags: ["大洋洲", "联合国", "政府采购"] }
-            ],
-            b2b: [
-              { name: "Kompass Oceania", url: "https://www.kompass.com/oceania", desc: { zh: "全球权威B2B企业数据库大洋洲分站", en: "Global authoritative B2B database's Oceania division" }, tags: ["大洋洲", "数据库", "工业"] },
-              { name: "TradeKey Oceania", url: "https://www.tradekey.com/oceania", desc: { zh: "全球知名B2B平台大洋洲专区", en: "Global B2B platform's Oceania division" }, tags: ["大洋洲", "B2B", "全球"] },
-              { name: "Oceania Business Pages", url: "https://www.oceaniabusinesspages.com", desc: { zh: "大洋洲规模最大的B2B企业名录与采购平台", en: "Oceania's largest B2B business directory" }, tags: ["大洋洲", "企业名录", "全品类"] }
-            ],
-            distribution: [
-              { name: "Oceania Distribution Network", url: "https://www.oceaniadistributionnetwork.com", desc: { zh: "大洋洲最大分销代理匹配平台，超5万家大洋洲本土分销商", en: "Oceania's largest distribution matching platform with 50,000+ Oceania distributors" }, tags: ["大洋洲", "分销", "代理"] },
-              { name: "Oceania Agency Network", url: "https://www.oceaniaagencynetwork.com", desc: { zh: "大洋洲本土专业代理合作匹配平台", en: "Oceania's professional agency partnership matching platform" }, tags: ["大洋洲", "代理", "全品类"] }
-            ]
-          }
-        },
         {
           id: "australia",
           name: { zh: "澳大利亚", en: "Australia" },
@@ -2711,6 +4064,158 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
+            },
+            {
+              id: "new-caledonia",
+              name: { zh: "新喀里多尼亚", en: "New Caledonia" },
+              flag: "NC",
+              channels: {
+                official: [
+                  { name: "新喀里多尼亚工商会CCIR", url: "https://www.cci.nc", desc: { zh: "新喀里多尼亚商会组织", en: "New Caledonia Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "新喀里多尼亚政府贸易门户", url: "https://www.nouvelle-caledonie.travel", desc: { zh: "新喀里多尼亚政府贸易旅游门户", en: "New Caledonia government trade and tourism portal" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "New Caledonia B2B", url: "https://www.newcaledoniab2b.nc", desc: { zh: "新喀里多尼亚本土B2B平台", en: "New Caledonia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "french-polynesia",
+              name: { zh: "法属波利尼西亚", en: "French Polynesia" },
+              flag: "PF",
+              channels: {
+                official: [
+                  { name: "法属波利尼西亚工商会CCISM", url: "https://www.ccism.pf", desc: { zh: "法属波利尼西亚商会组织", en: "French Polynesia Chamber of Commerce" }, tags: ["商会"] },
+                  { name: "法属波利尼西亚政府门户", url: "https://www.presidence.pf", desc: { zh: "法属波利尼西亚政府门户", en: "French Polynesia government portal" }, tags: ["官方"] }
+                ],
+                b2b: [
+                  { name: "French Polynesia B2B", url: "https://www.tahiti-b2b.com", desc: { zh: "法属波利尼西亚本土B2B平台", en: "French Polynesia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "samoa",
+              name: { zh: "萨摩亚", en: "Samoa" },
+              flag: "WS",
+              channels: {
+                official: [
+                  { name: "萨摩亚贸易投资促进局STIP", url: "https://www.samoabiz.ws", desc: { zh: "萨摩亚政府贸易投资促进机构", en: "Samoa Trade Investment Promotion" }, tags: ["官方"] },
+                  { name: "萨摩亚工商会Samoa Chamber", url: "https://www.samoachamber.ws", desc: { zh: "萨摩亚商会组织", en: "Samoa Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Samoa B2B", url: "https://www.samoab2b.com", desc: { zh: "萨摩亚本土B2B平台", en: "Samoa's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "tonga",
+              name: { zh: "汤加", en: "Tonga" },
+              flag: "TO",
+              channels: {
+                official: [
+                  { name: "汤加贸易投资促进局", url: "https://www.tongaweb.to", desc: { zh: "汤加政府贸易投资促进机构", en: "Tonga trade investment promotion agency" }, tags: ["官方"] },
+                  { name: "汤加工商会Tonga Chamber", url: "https://www.tongachamber.to", desc: { zh: "汤加商会组织", en: "Tonga Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Tonga B2B", url: "https://www.tongab2b.to", desc: { zh: "汤加本土B2B平台", en: "Tonga's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "vanuatu",
+              name: { zh: "瓦努阿图", en: "Vanuatu" },
+              flag: "VU",
+              channels: {
+                official: [
+                  { name: "瓦努阿图贸易投资促进局VTIPO", url: "https://www.vanuatutrade.com", desc: { zh: "瓦努阿图政府贸易投资促进机构", en: "Vanuatu Trade and Investment Promotion" }, tags: ["官方"] },
+                  { name: "瓦努阿图工商会Vanuatu Chamber", url: "https://www.vcci.vu", desc: { zh: "瓦努阿图商会组织", en: "Vanuatu Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Vanuatu B2B", url: "https://www.vanuatub2b.com", desc: { zh: "瓦努阿图本土B2B平台", en: "Vanuatu's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "solomon-islands",
+              name: { zh: "所罗门群岛", en: "Solomon Islands" },
+              flag: "SB",
+              channels: {
+                official: [
+                  { name: "所罗门群岛投资促进局", url: "https://www.investsolomonislands.com", desc: { zh: "所罗门群岛投资促进机构", en: "Solomon Islands Investment Promotion Agency" }, tags: ["官方"] },
+                  { name: "所罗门群岛工商会", url: "https://www.solomons.io", desc: { zh: "所罗门群岛商会组织", en: "Solomon Islands Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Solomon Islands B2B", url: "https://www.solomonb2b.com", desc: { zh: "所罗门群岛本土B2B平台", en: "Solomon Islands' domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "kiribati",
+              name: { zh: "基里巴斯", en: "Kiribati" },
+              flag: "KI",
+              channels: {
+                official: [
+                  { name: "基里巴斯贸易投资促进局", url: "https://www.mfed.gov.ki", desc: { zh: "基里巴斯政府贸易投资促进机构", en: "Kiribati Ministry of Finance" }, tags: ["官方"] },
+                  { name: "基里巴斯商会", url: "https://www.kiritrade.ki", desc: { zh: "基里巴斯商会组织", en: "Kiribati Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Kiribati B2B", url: "https://www.kiribatib2b.com", desc: { zh: "基里巴斯本土B2B平台", en: "Kiribati's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "micronesia",
+              name: { zh: "密克罗尼西亚联邦", en: "Federated States of Micronesia" },
+              flag: "FM",
+              channels: {
+                official: [
+                  { name: "密克罗尼西亚贸易投资局", url: "https://www.fsmgov.org", desc: { zh: "密克罗尼西亚联邦政府门户", en: "FSM Federated States government portal" }, tags: ["官方"] },
+                  { name: "密克罗尼西亚商会", url: "https://www.micronesiacommerce.fm", desc: { zh: "密克罗尼西亚商会组织", en: "Micronesia Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Micronesia B2B", url: "https://www.micronesiab2b.fm", desc: { zh: "密克罗尼西亚本土B2B平台", en: "Micronesia's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "palau",
+              name: { zh: "帕劳", en: "Palau" },
+              flag: "PW",
+              channels: {
+                official: [
+                  { name: "帕劳贸易投资局", url: "https://www.palaugov.pw", desc: { zh: "帕劳政府门户", en: "Palau government portal" }, tags: ["官方"] },
+                  { name: "帕劳商会", url: "https://www.palauchamber.pw", desc: { zh: "帕劳商会组织", en: "Palau Chamber of Commerce" }, tags: ["商会"] }
+                ],
+                b2b: [
+                  { name: "Palau B2B", url: "https://www.palaub2b.com", desc: { zh: "帕劳本土B2B平台", en: "Palau's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
+            },
+            {
+              id: "taiwan-detail",
+              name: { zh: "中国台湾", en: "Taiwan" },
+              flag: "TW",
+              channels: {
+                official: [
+                  { name: "台湾贸易中心TAITRA", url: "https://www.taitra.org.tw", desc: { zh: "台湾地区官方贸易促进机构", en: "Taiwan's official trade promotion organization" }, tags: ["官方", "贸易促进"] },
+                  { name: "Taiwantrade", url: "https://www.taiwantrade.com", desc: { zh: "台湾官方B2B平台", en: "Taiwan's official B2B platform" }, tags: ["B2B", "官方"] },
+                  { name: "台湾区电机电子工业同业公会TEEMA", url: "https://www.teema.org.tw", desc: { zh: "台湾电子电机行业核心公会，覆盖电子元器件、半导体、通信设备、汽车电子", en: "Taiwan's top electronics and electrical machinery industry association" }, tags: ["商会", "电子", "半导体"] }
+                ],
+                b2b: [
+                  { name: "文笔天天网ttnet", url: "https://www.ttnet.net", desc: { zh: "台湾地区头部B2B平台，深耕工业制造、五金机械、电子元器件品类", en: "Taiwan's leading B2B platform for industrial manufacturing and electronics" }, tags: ["B2B", "工业", "五金"] },
+                  { name: "台湾经纬搜索B2B平台", url: "https://www.jw1688.com.tw", desc: { zh: "台湾本土B2B平台", en: "Taiwan's domestic B2B platform" }, tags: ["B2B"] }
+                ],
+                distribution: []
+              }
             }
           ]
         }
@@ -2722,12 +4227,7 @@ const TRADEDATA = {
       ]
     }
   ],
-  stats: {
-    totalContinents: 6,
-    totalRegions: 23,
-    totalCountries: 144,
-    totalChannels: 900
-  }
+  stats: {}
 };
 
 
@@ -2813,6 +4313,40 @@ function countRegionChannels(region) {
     total += countChannels(country);
   }
   return total;
+}
+
+// ===== DYNAMIC GLOBAL STATS =====
+function countStats() {
+  if (typeof TRADEDATA === 'undefined') return { continents: 0, countries: 0, channels: 0 };
+  let countries = 0;
+  let channels = 0;
+  for (const cont of TRADEDATA.continents) {
+    countries += (cont.regions || []).reduce((a, r) => a + (r.countries || []).length, 0);
+    for (const region of cont.regions || []) {
+      for (const country of region.countries || []) {
+        channels += countChannels(country);
+      }
+    }
+    channels += (cont.crossborder || []).length;
+  }
+  return {
+    continents: TRADEDATA.continents.length,
+    countries,
+    channels
+  };
+}
+function updateStatsDisplay() {
+  const s = countStats();
+  const cnEl = document.querySelector('.stat-countries');
+  const chEl = document.querySelector('.stat-channels');
+  const hscEl = document.getElementById('hero-stat-countries');
+  const hchEl = document.getElementById('hero-stat-channels');
+  const hccEl = document.getElementById('hero-stat-continents');
+  if (cnEl) cnEl.textContent = s.countries;
+  if (chEl) chEl.textContent = s.channels >= 1000 ? (s.channels / 1000).toFixed(1) + 'k+' : s.channels + '+';
+  if (hscEl) hscEl.textContent = s.countries;
+  if (hchEl) hchEl.textContent = s.channels >= 1000 ? (s.channels / 1000).toFixed(1) + 'k+' : s.channels + '+';
+  if (hccEl) hccEl.textContent = s.continents;
 }
 
 // ===== THEME =====
@@ -3027,15 +4561,15 @@ function renderHome() {
       <p class="hero-subtitle">${subtitle}</p>
       <div class="hero-stats">
         <div class="hero-stat">
-          <span class="hero-stat-number">6</span>
+          <span class="hero-stat-number" id="hero-stat-continents">${countStats().continents}</span>
           <span class="hero-stat-label">${state.lang === 'zh' ? '大洲' : 'Continents'}</span>
         </div>
         <div class="hero-stat">
-          <span class="hero-stat-number">144</span>
+          <span class="hero-stat-number" id="hero-stat-countries">${countStats().countries}</span>
           <span class="hero-stat-label">${state.lang === 'zh' ? '国家/地区' : 'Countries'}</span>
         </div>
         <div class="hero-stat">
-          <span class="hero-stat-number">900+</span>
+          <span class="hero-stat-number" id="hero-stat-channels">${countStats().channels >= 1000 ? (countStats().channels/1000).toFixed(1)+'k+' : countStats().channels+'+'}</span>
           <span class="hero-stat-label">${state.lang === 'zh' ? '渠道平台' : 'Channels'}</span>
         </div>
       </div>
@@ -3506,6 +5040,519 @@ function renderAll() {
   renderSidebar();
   renderContent();
   updateFavBadge();
+  updateStatsDisplay();
+}
+
+// ===== BIO NEURAL WORLD MAP =====
+function initBioCanvas() {
+  const canvas = document.getElementById('bioCanvas');
+  const banner = document.getElementById('bioBanner');
+  if (!canvas || !banner) return;
+
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, dpr = 1;
+  let animId = null;
+  let continents = [];
+  let channels = [];
+  let pulses = [];
+  let ambientParticles = [];
+  let hoverNode = null;
+  let mouseX = 0, mouseY = 0;
+  let theme = document.documentElement.getAttribute('data-theme') || 'dark';
+
+  const CHANNEL_COLORS = {
+    official: '#3b82f6',
+    b2b: '#10b981',
+    distribution: '#f59e0b',
+    crossborder: '#8b5cf6'
+  };
+  const CHANNEL_GLOW = {
+    official: 'rgba(59,130,246,',
+    b2b: 'rgba(16,185,129,',
+    distribution: 'rgba(245,158,11,',
+    crossborder: 'rgba(139,92,246,'
+  };
+
+  // World-map layout: 6 continent hubs as fractions of W×H
+  const BASE_CONTINENTS = [
+    { id: 'asia',       label: '亚洲', labelEn: 'Asia',        cx: 0.74, cy: 0.38, r: 38,  color: '#f59e0b', glow: 'rgba(245,158,11,'  },
+    { id: 'europe',     label: '欧洲', labelEn: 'Europe',       cx: 0.50, cy: 0.30, r: 32,  color: '#3b82f6', glow: 'rgba(59,130,246,'  },
+    { id: 'north-america', label: '北美', labelEn: 'N. America', cx: 0.18, cy: 0.35, r: 30,  color: '#10b981', glow: 'rgba(16,185,129,'  },
+    { id: 'south-america', label: '南美', labelEn: 'S. America', cx: 0.25, cy: 0.65, r: 22,  color: '#8b5cf6', glow: 'rgba(139,92,246,'  },
+    { id: 'africa',     label: '非洲', labelEn: 'Africa',       cx: 0.50, cy: 0.58, r: 24,  color: '#14b8a6', glow: 'rgba(20,184,166,'  },
+    { id: 'oceania',    label: '大洋洲', labelEn: 'Oceania',    cx: 0.82, cy: 0.68, r: 18,  color: '#f0ede8', glow: 'rgba(240,237,232,' }
+  ];
+
+  // Inter-continental connection pairs (synapses)
+  const CONNECTIONS = [
+    ['asia', 'europe'],
+    ['asia', 'north-america'],
+    ['asia', 'oceania'],
+    ['europe', 'africa'],
+    ['europe', 'north-america'],
+    ['north-america', 'south-america'],
+    ['africa', 'asia'],
+    ['africa', 'south-america'],
+    ['oceania', 'asia'],
+  ];
+
+  // Country micro-nodes per continent
+  const COUNTRY_NODES = {
+    'asia': [
+      { name: '中国', nameEn: 'CN', cx: 0.70, cy: 0.44 },
+      { name: '日本', nameEn: 'JP', cx: 0.77, cy: 0.33 },
+      { name: '韩国', nameEn: 'KR', cx: 0.75, cy: 0.38 },
+      { name: '印度', nameEn: 'IN', cx: 0.66, cy: 0.52 },
+      { name: '东南亚', nameEn: 'SEA', cx: 0.72, cy: 0.62 },
+      { name: '中东', nameEn: 'ME', cx: 0.60, cy: 0.45 },
+      { name: '中亚', nameEn: 'CA', cx: 0.63, cy: 0.36 },
+    ],
+    'europe': [
+      { name: '西欧', nameEn: 'W.EU', cx: 0.46, cy: 0.28 },
+      { name: '北欧', nameEn: 'N.EU', cx: 0.48, cy: 0.18 },
+      { name: '东欧', nameEn: 'E.EU', cx: 0.55, cy: 0.26 },
+      { name: '南欧', nameEn: 'S.EU', cx: 0.48, cy: 0.36 },
+    ],
+    'north-america': [
+      { name: '美国', nameEn: 'US', cx: 0.13, cy: 0.33 },
+      { name: '加拿大', nameEn: 'CA', cx: 0.14, cy: 0.18 },
+      { name: '墨西哥', nameEn: 'MX', cx: 0.10, cy: 0.52 },
+    ],
+    'south-america': [
+      { name: '巴西', nameEn: 'BR', cx: 0.28, cy: 0.64 },
+      { name: '南锥体', nameEn: 'S.AM', cx: 0.24, cy: 0.82 },
+    ],
+    'africa': [
+      { name: '北非', nameEn: 'N.AF', cx: 0.46, cy: 0.44 },
+      { name: '西非', nameEn: 'W.AF', cx: 0.40, cy: 0.58 },
+      { name: '南非', nameEn: 'S.AF', cx: 0.50, cy: 0.78 },
+      { name: '东非', nameEn: 'E.AF', cx: 0.56, cy: 0.62 },
+    ],
+    'oceania': [
+      { name: '澳新', nameEn: 'AU/NZ', cx: 0.84, cy: 0.68 },
+      { name: '太平洋', nameEn: 'PAC', cx: 0.90, cy: 0.60 },
+    ]
+  };
+
+  // Channel data derived from TRADEDATA
+  function buildChannels() {
+    if (typeof TRADEDATA === 'undefined') return;
+    const chs = [];
+    const ctypes = ['official', 'b2b', 'distribution', 'crossborder'];
+    TRADEDATA.continents.forEach(cont => {
+      cont.regions.forEach(reg => {
+        reg.countries.forEach(country => {
+          ctypes.forEach(ct => {
+            const list = country.channels[ct] || [];
+            list.forEach(ch => {
+              const node = BASE_CONTINENTS.find(n => n.id === cont.id) || BASE_CONTINENTS[0];
+              const alpha = Math.random();
+              chs.push({
+                continentId: cont.id,
+                countryId: country.id,
+                countryName: country.name.zh,
+                countryNameEn: country.name.en,
+                type: ct,
+                name: ch.name,
+                url: ch.url,
+                color: CHANNEL_COLORS[ct],
+                glow: CHANNEL_GLOW[ct],
+                x: node.cx + (Math.random() - 0.5) * node.r * 2.5,
+                y: node.cy + (Math.random() - 0.5) * node.r * 2.5,
+                phase: alpha * Math.PI * 2,
+                freq: 0.3 + alpha * 0.5,
+              });
+            });
+          });
+        });
+      });
+    });
+    // Limit for performance
+    channels = chs.slice(0, 300);
+  }
+
+  function buildNodes() {
+    continents = BASE_CONTINENTS.map(c => ({
+      ...c,
+      x: c.cx * W,
+      y: c.cy * H,
+      r: c.r * Math.min(W, H) / 600,
+      pulsePhase: Math.random() * Math.PI * 2,
+      pulseSpeed: 0.5 + Math.random() * 0.5,
+    }));
+    buildChannels();
+  }
+
+  function buildConnections() {
+    const conns = [];
+    CONNECTIONS.forEach(([a, b]) => {
+      const na = continents.find(n => n.id === a);
+      const nb = continents.find(n => n.id === b);
+      if (!na || !nb) return;
+      // Control point for bezier curve
+      const mx = (na.x + nb.x) / 2 + (nb.y - na.y) * 0.15;
+      const my = (na.y + nb.y) / 2 - (nb.x - na.x) * 0.15;
+      const len = Math.hypot(nb.x - na.x, nb.y - na.y);
+      conns.push({ x1: na.x, y1: na.y, mx, my, x2: nb.x, y2: nb.y, len });
+    });
+    return conns;
+  }
+
+  function buildCountryNodes() {
+    const nodes = [];
+    Object.entries(COUNTRY_NODES).forEach(([contId, list]) => {
+      const cont = continents.find(n => n.id === contId);
+      if (!cont) return;
+      list.forEach((c, i) => {
+        nodes.push({
+          continentId: contId,
+          name: c.name,
+          nameEn: c.nameEn,
+          x: c.cx * W,
+          y: c.cy * H,
+          r: 6 * Math.min(W, H) / 600,
+          phase: i * 0.7 + Math.random(),
+        });
+      });
+    });
+    return nodes;
+  }
+
+  function spawnPulse(conns) {
+    if (!conns.length) return;
+    const c = conns[Math.floor(Math.random() * conns.length)];
+    const types = Object.keys(CHANNEL_COLORS);
+    const t = types[Math.floor(Math.random() * types.length)];
+    const offset = Math.random();
+    pulses.push({
+      progress: offset,
+      speed: 0.004 + Math.random() * 0.006,
+      x1: c.x1, y1: c.y1, mx: c.mx, my: c.my, x2: c.x2, y2: c.y2,
+      color: CHANNEL_COLORS[t],
+      glow: CHANNEL_GLOW[t],
+      type: t,
+      alpha: 1,
+      len: c.len,
+    });
+  }
+
+  function spawnAmbientParticle() {
+    const side = Math.floor(Math.random() * 4);
+    let x, y, vx, vy;
+    if (side === 0) { x = 0; y = Math.random() * H; vx = 0.3 + Math.random() * 0.5; vy = (Math.random() - 0.5) * 0.3; }
+    else if (side === 1) { x = W; y = Math.random() * H; vx = -(0.3 + Math.random() * 0.5); vy = (Math.random() - 0.5) * 0.3; }
+    else if (side === 2) { x = Math.random() * W; y = 0; vx = (Math.random() - 0.5) * 0.3; vy = 0.3 + Math.random() * 0.5; }
+    else { x = Math.random() * W; y = H; vx = (Math.random() - 0.5) * 0.3; vy = -(0.3 + Math.random() * 0.5); }
+    const types = Object.keys(CHANNEL_COLORS);
+    const t = types[Math.floor(Math.random() * types.length)];
+    ambientParticles.push({ x, y, vx, vy, alpha: 0, maxAlpha: 0.25 + Math.random() * 0.3,
+      r: 1 + Math.random() * 1.5, color: CHANNEL_COLORS[t], glow: CHANNEL_GLOW[t], type: t, life: 0 });
+  }
+
+  function bezierPoint(t, x1, y1, mx, my, x2, y2) {
+    const u = 1 - t;
+    return {
+      x: u*u*x1 + 2*u*t*mx + t*t*x2,
+      y: u*u*y1 + 2*u*t*my + t*t*y2
+    };
+  }
+
+  function drawGrid() {
+    const gridSpacing = 80 * Math.min(W, H) / 600;
+    ctx.save();
+    ctx.strokeStyle = theme === 'dark' ? 'rgba(30,45,69,0.25)' : 'rgba(200,191,176,0.15)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < W; x += gridSpacing) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = 0; y < H; y += gridSpacing) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawConnections(conns, t) {
+    conns.forEach(c => {
+      ctx.save();
+      // Subtle glow path
+      ctx.shadowColor = theme === 'dark' ? 'rgba(20,184,166,0.08)' : 'rgba(59,130,246,0.06)';
+      ctx.shadowBlur = 8;
+      ctx.strokeStyle = theme === 'dark' ? 'rgba(30,45,69,0.35)' : 'rgba(200,191,176,0.2)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(c.x1, c.y1);
+      ctx.quadraticCurveTo(c.mx, c.my, c.x2, c.y2);
+      ctx.stroke();
+      ctx.restore();
+    });
+  }
+
+  function drawCountryNodes(countryNodes, t) {
+    countryNodes.forEach(n => {
+      const pulse = 0.5 + 0.5 * Math.sin(t * 1.2 + n.phase);
+      const r = n.r * (0.7 + 0.3 * pulse);
+      const alpha = 0.25 + 0.25 * pulse;
+      ctx.save();
+      ctx.shadowColor = theme === 'dark' ? 'rgba(20,184,166,0.4)' : 'rgba(59,130,246,0.3)';
+      ctx.shadowBlur = 6;
+      ctx.fillStyle = theme === 'dark'
+        ? `rgba(20,184,166,${alpha})`
+        : `rgba(59,130,246,${alpha})`;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function drawContinentNodes(t) {
+    continents.forEach(n => {
+      const pulse = 0.5 + 0.5 * Math.sin(t * n.pulseSpeed + n.pulsePhase);
+      const glowR = n.r * (1.5 + 0.8 * pulse);
+
+      ctx.save();
+      // Outer glow rings
+      for (let i = 3; i >= 1; i--) {
+        const ringAlpha = (0.06 + 0.04 * pulse) / i;
+        const ringR = n.r * (1 + i * 0.5);
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, ringR, 0, Math.PI * 2);
+        ctx.fillStyle = theme === 'dark'
+          ? `rgba(20,184,166,${ringAlpha})`
+          : `rgba(59,130,246,${ringAlpha * 0.5})`;
+        ctx.fill();
+      }
+
+      // Core glow
+      ctx.shadowColor = n.glow + '0.8)';
+      ctx.shadowBlur = 20 + 15 * pulse;
+      const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+      grad.addColorStop(0, theme === 'dark' ? '#ffffff' : '#ffffff');
+      grad.addColorStop(0.3, n.color);
+      grad.addColorStop(1, n.glow + '0)');
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Inner ring
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = theme === 'dark'
+        ? `rgba(255,255,255,${0.2 + 0.15 * pulse})`
+        : `rgba(255,255,255,${0.4 + 0.2 * pulse})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r * 0.65, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Label
+      ctx.font = `${Math.max(10, n.r * 0.45)}px 'DM Sans', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = theme === 'dark'
+        ? `rgba(240,237,232,${0.75 + 0.25 * pulse})`
+        : `rgba(26,26,26,${0.6 + 0.2 * pulse})`;
+      ctx.fillText(n.label, n.x, n.y);
+      ctx.restore();
+    });
+  }
+
+  function drawChannels(t) {
+    if (!channels.length) return;
+    channels.forEach((ch, i) => {
+      const pulse = Math.sin(t * ch.freq + ch.phase);
+      if (pulse < 0.1) return;
+      const alpha = Math.max(0, pulse - 0.1) * 0.7;
+      ctx.save();
+      ctx.shadowColor = ch.glow + '0.6)';
+      ctx.shadowBlur = 4;
+      ctx.fillStyle = ch.color.replace(')', `,${alpha})`).replace('rgb', 'rgba');
+      ctx.beginPath();
+      ctx.arc(ch.x * W, ch.y * H, 1.5 + pulse, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function drawPulses(conns, t) {
+    pulses = pulses.filter(p => p.progress < 1.0);
+    pulses.forEach(p => {
+      p.progress += p.speed;
+      if (p.progress > 1) { p.progress = 1; return; }
+      const pt = bezierPoint(p.progress, p.x1, p.y1, p.mx, p.my, p.x2, p.y2);
+      const fadeIn = Math.min(1, p.progress * 8);
+      const fadeOut = Math.min(1, (1 - p.progress) * 8);
+      const alpha = Math.min(fadeIn, fadeOut) * 0.9;
+
+      ctx.save();
+      // Trail
+      for (let i = 3; i >= 1; i--) {
+        const tp = Math.max(0, p.progress - i * 0.04);
+        const pt2 = bezierPoint(tp, p.x1, p.y1, p.mx, p.my, p.x2, p.y2);
+        const trailAlpha = alpha * (1 - i / 4) * 0.5;
+        ctx.beginPath();
+        ctx.arc(pt2.x, pt2.y, 3 - i * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = p.glow + trailAlpha + ')';
+        ctx.fill();
+      }
+      // Main pulse
+      ctx.shadowColor = p.glow + '1)';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      // Inner bright core
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function drawAmbientParticles() {
+    ambientParticles = ambientParticles.filter(p => p.life < 1);
+    ambientParticles.forEach(p => {
+      p.life += 0.003;
+      p.x += p.vx;
+      p.y += p.vy;
+      const fadeIn = Math.min(1, p.life * 10);
+      const fadeOut = Math.min(1, (1 - p.life) * 8);
+      const alpha = p.maxAlpha * Math.min(fadeIn, fadeOut);
+      ctx.save();
+      ctx.shadowColor = p.glow + '0.5)';
+      ctx.shadowBlur = 4;
+      ctx.fillStyle = p.glow + alpha + ')';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function drawHoverTooltip() {
+    if (!hoverNode) return;
+    const { x, y, r, label, labelEn } = hoverNode;
+    ctx.save();
+    ctx.shadowColor = 'rgba(20,184,166,0.5)';
+    ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.8, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(20,184,166,0.6)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    const fontSize = Math.max(11, r * 0.5);
+    ctx.font = `${fontSize}px 'DM Sans', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = '#f0ede8';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 8;
+    ctx.fillText(label, x, y - r - 6);
+    ctx.font = `${fontSize * 0.75}px 'JetBrains Mono', monospace`;
+    ctx.fillStyle = 'rgba(20,184,166,0.9)';
+    ctx.fillText(labelEn, x, y - r - 6 - fontSize * 0.9);
+    ctx.restore();
+  }
+
+  let conns = [], countryNodes = [];
+  let pulseTimer = 0;
+  let particleTimer = 0;
+
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+    if (theme === 'dark') {
+      bgGrad.addColorStop(0, '#0b0f19');
+      bgGrad.addColorStop(0.5, '#0d1220');
+      bgGrad.addColorStop(1, '#0b0f19');
+    } else {
+      bgGrad.addColorStop(0, '#faf8f5');
+      bgGrad.addColorStop(0.5, '#f5f0e8');
+      bgGrad.addColorStop(1, '#faf8f5');
+    }
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    drawGrid();
+    drawConnections(conns, t);
+    drawCountryNodes(countryNodes, t);
+    drawChannels(t);
+    drawAmbientParticles();
+    drawPulses(conns, t);
+    drawContinentNodes(t);
+    drawHoverTooltip();
+
+    // Spawn pulses
+    pulseTimer++;
+    if (pulseTimer > 12) { pulseTimer = 0; spawnPulse(conns); }
+    particleTimer++;
+    if (particleTimer > 3) { particleTimer = 0; if (ambientParticles.length < 60) spawnAmbientParticle(); }
+  }
+
+  function loop(ts) {
+    const t = ts * 0.001;
+    draw(t);
+    animId = requestAnimationFrame(loop);
+  }
+
+  function resize() {
+    dpr = window.devicePixelRatio || 1;
+    W = banner.clientWidth;
+    H = banner.clientHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    buildNodes();
+    conns = buildConnections();
+    countryNodes = buildCountryNodes();
+  }
+
+  // Mouse interaction
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+    hoverNode = null;
+    continents.forEach(n => {
+      if (Math.hypot(mouseX - n.x, mouseY - n.y) < n.r * 2) {
+        hoverNode = n;
+        canvas.style.cursor = 'pointer';
+      }
+    });
+    if (!hoverNode) canvas.style.cursor = 'default';
+  });
+
+  canvas.addEventListener('mouseleave', () => { hoverNode = null; });
+
+  canvas.addEventListener('click', e => {
+    if (!hoverNode) return;
+    // Navigate to continent in sidebar
+    const treeItem = document.querySelector(`[data-tree-id="${hoverNode.id}"]`);
+    if (treeItem) {
+      treeItem.click();
+      document.querySelector('.sidebar')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // Theme change listener
+  const themeObserver = new MutationObserver(() => {
+    theme = document.documentElement.getAttribute('data-theme') || 'dark';
+  });
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  resize();
+  window.addEventListener('resize', resize, { passive: true });
+  animId = requestAnimationFrame(loop);
 }
 
 // ===== INIT =====
@@ -3514,6 +5561,7 @@ initLang();
 initZoom();
 initSearch();
 renderAll();
+initBioCanvas();
 </script>
 </body>
 </html>
