@@ -4977,7 +4977,8 @@ window.toggleLang = function() {
   track('preference', { action: 'language_change', language: state.lang });
   renderAll();
   localStorage.setItem('tr_lang', state.lang);
-  $('#langToggle').textContent = state.lang === 'zh' ? 'EN / 中文' : '中文 / EN';
+  const langEl = $('#langToggle');
+  if (langEl) langEl.textContent = state.lang === 'zh' ? 'EN / 中文' : '中文 / EN';
 }
 function initLang() {
   const saved = localStorage.getItem('tr_lang');
@@ -4988,7 +4989,8 @@ function initLang() {
     state.lang = navLang.startsWith('zh') ? 'zh' : 'en';
   }
   document.documentElement.lang = state.lang;
-  $('#langToggle').textContent = state.lang === 'zh' ? 'EN / 中文' : '中文 / EN';
+  const langEl = $('#langToggle');
+  if (langEl) langEl.textContent = state.lang === 'zh' ? 'EN / 中文' : '中文 / EN';
 }
 
 // ===== ZOOM =====
@@ -4998,7 +5000,8 @@ window.changeFontSize = function(dir) {
   const newIdx = Math.max(0, Math.min(sizes.length - 1, idx + dir));
   state.fontSize = sizes[newIdx];
   document.body.style.fontSize = state.fontSize + '%';
-  $('#zoomLevel').textContent = state.fontSize + '%';
+  const zoomEl = $('#zoomLevel');
+  if (zoomEl) zoomEl.textContent = state.fontSize + '%';
   localStorage.setItem('tr_zoom', state.fontSize);
 }
 function initZoom() {
@@ -5006,7 +5009,8 @@ function initZoom() {
   if (saved) {
     state.fontSize = saved;
     document.body.style.fontSize = saved + '%';
-    $('#zoomLevel').textContent = saved + '%';
+    const zoomEl = $('#zoomLevel');
+    if (zoomEl) zoomEl.textContent = saved + '%';
   }
 }
 
@@ -6204,6 +6208,7 @@ async function loadDashWorldMap() {
 
 window.showDashToast = function(msg) {
   const el = document.getElementById('dashToast');
+  if (!el) return;
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(el._timer);
@@ -6348,7 +6353,9 @@ function updateFavBadge() {
 // ===== NOTIFICATION =====
 window.notify = function(msg) {
   const el = $('#notification');
-  $('#notificationText').textContent = msg;
+  const text = $('#notificationText');
+  if (!el || !text) return;
+  text.textContent = msg;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2500);
 };
