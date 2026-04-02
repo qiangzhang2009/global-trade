@@ -175,6 +175,10 @@
       background: var(--bg-tertiary);
       color: var(--text-primary);
     }
+    .btn-icon:focus-visible {
+      outline: 2px solid var(--accent-teal);
+      outline-offset: 2px;
+    }
     .btn-icon.active {
       background: var(--accent-teal);
       color: #0b0f19;
@@ -192,6 +196,10 @@
     .lang-toggle:hover {
       border-color: var(--accent-teal);
       color: var(--accent-teal);
+    }
+    .lang-toggle:focus-visible {
+      outline: 2px solid var(--accent-teal);
+      outline-offset: 2px;
     }
     .btn-sidebar-toggle {
       display: none;
@@ -4299,7 +4307,11 @@ const typeColors = {
   crossborder: { bg: 'rgba(139,92,246,0.15)', color: 'var(--accent-crossborder-light)', border: 'rgba(139,92,246,0.2)' },
 };
 
-function l(key) { return state.lang === 'zh' ? key : key; }
+function l(key) { return translations[state.lang]?.[key] || translations.zh?.[key] || key; }
+const translations = {
+  zh: {},
+  en: {}
+};
 function t(obj) { if (!obj) return ''; return obj[state.lang] || obj.zh || ''; }
 function getFlag(flag) { return flagMap[flag] || '🌐'; }
 function countChannels(country) {
@@ -4373,6 +4385,7 @@ function initTheme() {
 // ===== LANG =====
 window.toggleLang = function() {
   state.lang = state.lang === 'zh' ? 'en' : 'zh';
+  document.documentElement.lang = state.lang;
   track('preference', { action: 'language_change', language: state.lang });
   renderAll();
   localStorage.setItem('tr_lang', state.lang);
@@ -4382,8 +4395,12 @@ function initLang() {
   const saved = localStorage.getItem('tr_lang');
   if (saved) {
     state.lang = saved;
-    $('#langToggle').textContent = state.lang === 'zh' ? 'EN / 中文' : '中文 / EN';
+  } else {
+    const navLang = (navigator.language || navigator.userLanguage || 'zh').toLowerCase();
+    state.lang = navLang.startsWith('zh') ? 'zh' : 'en';
   }
+  document.documentElement.lang = state.lang;
+  $('#langToggle').textContent = state.lang === 'zh' ? 'EN / 中文' : '中文 / EN';
 }
 
 // ===== ZOOM =====
@@ -4410,16 +4427,28 @@ window.toggleSidebar = function() {
   state.sidebarOpen = !state.sidebarOpen;
   $('#sidebar').classList.toggle('collapsed', !state.sidebarOpen);
 }
+function isMobile() { return window.innerWidth <= 768; }
+let sidebarInitialized = false;
 function renderSidebar() {
+  // On first render (mobile), sidebar starts hidden; desktop starts visible
+  if (!sidebarInitialized) {
+    sidebarInitialized = true;
+    if (isMobile()) {
+      state.sidebarOpen = false;
+      $('#sidebar').classList.add('collapsed');
+    }
+  }
   const tree = $('#sidebarTree');
-  tree.innerHTML = TRADEDATA.continents.map(cont => {
+  tree.setAttribute('role', 'tree');
+  tree.setAttribute('aria-label', state.lang === 'zh' ? '国家与地区导航' : 'Country and Region Navigation');
+  tree.innerHTML = TRADEDATA.continents.map((cont, ci) => {
     const isOpen = cont.id === state.currentContinent;
     const iconClass = `icon-${cont.id}`;
     const name = t(cont.name);
     const count = countCountryChannels(cont);
     return `
-      <div class="tree-continent ${isOpen ? 'open' : ''}" data-id="${cont.id}">
-        <div class="tree-continent-header ${isOpen ? 'open' : ''}" onclick="toggleContinent('${cont.id}')">
+      <div class="tree-continent ${isOpen ? 'open' : ''}" data-id="${cont.id}" role="treeitem" aria-expanded="${isOpen}" aria-level="1">
+        <div class="tree-continent-header ${isOpen ? 'open' : ''}" onclick="toggleContinent('${cont.id}')" onkeydown="handleTreeKey(event, 'continent','${cont.id}')" tabindex="0" role="button" aria-label="${name} (${count})">
           <div class="tree-continent-icon ${iconClass}" style="display:flex;align-items:center;justify-content:center;">
             ${continentIcons[cont.id] || '🌐'}
           </div>
@@ -4434,8 +4463,8 @@ function renderSidebar() {
             const regionName = t(region.name);
             const regionCount = countRegionChannels(region);
             return `
-              <div class="tree-region ${regionOpen ? 'open' : ''}" data-id="${region.id}">
-                <div class="tree-region-header ${regionOpen ? 'open' : ''}" onclick="toggleRegion('${cont.id}','${region.id}')">
+              <div class="tree-region ${regionOpen ? 'open' : ''}" data-id="${region.id}" role="treeitem" aria-expanded="${regionOpen}" aria-level="2">
+                <div class="tree-region-header ${regionOpen ? 'open' : ''}" onclick="toggleRegion('${cont.id}','${region.id}')" onkeydown="handleTreeKey(event, 'region','${cont.id}','${region.id}')" tabindex="-1" role="button" aria-label="${regionName} (${regionCount})">
                   <div class="tree-region-dot"></div>
                   <span class="tree-region-name">${regionName}</span>
                   <span class="tree-continent-count">${regionCount}</span>
@@ -4448,7 +4477,7 @@ function renderSidebar() {
                     const flag = getFlag(country.flag);
                     const cCount = countChannels(country);
                     return `
-                      <div class="tree-country ${isActive ? 'active' : ''}" onclick="selectCountry('${cont.id}','${region.id}','${country.id}')">
+                      <div class="tree-country ${isActive ? 'active' : ''}" onclick="selectCountry('${cont.id}','${region.id}','${country.id}')" onkeydown="handleTreeKey(event, 'country','${cont.id}','${region.id}','${country.id}')" tabindex="-1" role="treeitem" aria-selected="${isActive}" aria-label="${t(country.name)} (${cCount})">
                         <span class="tree-country-flag">${flag}</span>
                         <span class="tree-country-name">${t(country.name)}</span>
                         <span class="tree-country-count">${cCount}</span>
@@ -4461,8 +4490,8 @@ function renderSidebar() {
             `;
           }).join('')}
           ${(cont.crossborder || []).length > 0 ? `
-            <div class="tree-region ${state.currentRegion === 'crossborder' ? 'open' : ''}" data-id="crossborder">
-              <div class="tree-region-header ${state.currentRegion === 'crossborder' ? 'open' : ''}" onclick="toggleRegion('${cont.id}','crossborder')">
+            <div class="tree-region ${state.currentRegion === 'crossborder' ? 'open' : ''}" data-id="crossborder" role="treeitem" aria-expanded="${state.currentRegion === 'crossborder'}" aria-level="2">
+              <div class="tree-region-header ${state.currentRegion === 'crossborder' ? 'open' : ''}" onclick="toggleRegion('${cont.id}','crossborder')" tabindex="-1" role="button" aria-label="${state.lang === 'zh' ? '跨境通用平台' : 'Cross-border Platforms'} (${cont.crossborder.length})">
                 <div class="tree-region-dot" style="background:var(--accent-crossborder)"></div>
                 <span class="tree-region-name">${state.lang === 'zh' ? '跨境通用平台' : 'Cross-border Platforms'}</span>
                 <span class="tree-continent-count">${cont.crossborder.length}</span>
@@ -4471,7 +4500,7 @@ function renderSidebar() {
               <div class="tree-countries">
                   <div class="tree-countries-inner">
                   ${cont.crossborder.map(ch => `
-                    <div class="tree-country" onclick="selectChannelDirect('${cont.id}','crossborder',null,'${ch.name}')">
+                    <div class="tree-country" onclick="selectChannelDirect('${cont.id}','crossborder',null,'${ch.name}')" tabindex="-1" role="treeitem" aria-label="${ch.name}">
                       <span class="tree-country-flag">🌐</span>
                       <span class="tree-country-name">${ch.name}</span>
                     </div>
@@ -4485,6 +4514,16 @@ function renderSidebar() {
       </div>
     `;
   }).join('');
+}
+
+window.handleTreeKey = function(e, type, contId, regionId, countryId) {
+  const key = e.key;
+  if (key === 'Enter' || key === ' ') {
+    e.preventDefault();
+    if (type === 'continent') toggleContinent(contId);
+    else if (type === 'region') toggleRegion(contId, regionId);
+    else if (type === 'country') selectCountry(contId, regionId, countryId);
+  }
 }
 
 window.toggleContinent = function(id) {
@@ -5598,6 +5637,17 @@ initZoom();
 initSearch();
 renderAll();
 initBioCanvas();
+
+// Sync sidebar visibility on resize
+window.addEventListener('resize', () => {
+  if (isMobile()) {
+    state.sidebarOpen = false;
+    $('#sidebar').classList.add('collapsed');
+  } else {
+    state.sidebarOpen = true;
+    $('#sidebar').classList.remove('collapsed');
+  }
+}, { passive: true });
 </script>
 </body>
 </html>
