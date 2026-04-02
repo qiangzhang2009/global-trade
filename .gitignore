@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+
+# Build
+dist/
+build/
+
+# Temporary
+*.tmp
+*.bak
+.gstack/
+.gstack-design-reports/
+.specstory/
