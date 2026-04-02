@@ -5571,7 +5571,8 @@ window.showDashboard = function() {
 };
 
 window.closeDashboard = function() {
-  document.getElementById('dashboardOverlay').classList.remove('open');
+  const overlay = document.getElementById('dashboardOverlay');
+  if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
 };
 
@@ -5721,6 +5722,9 @@ function getHeatColor(clicks, maxClicks, isDark) {
 function renderDashHeatmap(data, ranked) {
   const svgEl = document.getElementById('dashboardSvg');
   const emptyEl = document.getElementById('dashEmptyMap');
+  const heatScale = document.getElementById('heatScale');
+
+  if (!svgEl || !emptyEl) return;
 
   if (ranked.length === 0) {
     svgEl.style.display = 'none';
@@ -5734,14 +5738,15 @@ function renderDashHeatmap(data, ranked) {
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
 
   // Heat legend
-  const heatScale = document.getElementById('heatScale');
-  heatScale.innerHTML = '';
-  for (let i = 0; i < 6; i++) {
-    const t = i / 5;
-    const cell = document.createElement('div');
-    cell.className = 'dash-heat-cell';
-    cell.style.background = getHeatColor(Math.round(t * maxClicks), maxClicks, isDark);
-    heatScale.appendChild(cell);
+  if (heatScale) {
+    heatScale.innerHTML = '';
+    for (let i = 0; i < 6; i++) {
+      const t = i / 5;
+      const cell = document.createElement('div');
+      cell.className = 'dash-heat-cell';
+      cell.style.background = getHeatColor(Math.round(t * maxClicks), maxClicks, isDark);
+      heatScale.appendChild(cell);
+    }
   }
 
   // Color all countries on the SVG
@@ -5764,6 +5769,7 @@ function renderDashHeatmap(data, ranked) {
 
 function renderDashRankList(ranked, total) {
   const list = document.getElementById('dashRankList');
+  if (!list) return;
   if (ranked.length === 0) {
     list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px">${state.lang === 'zh' ? '暂无数据' : 'No data yet'}</div>`;
     return;
@@ -5789,6 +5795,7 @@ function renderDashRankList(ranked, total) {
 
 function renderDashBarChart(ranked, total) {
   const chart = document.getElementById('dashBarChart');
+  if (!chart) return;
   if (ranked.length === 0) {
     chart.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px">${state.lang === 'zh' ? '暂无数据' : 'No data yet'}</div>`;
     return;
@@ -5882,16 +5889,18 @@ function renderVisitorSourcePanel() {
   const sorted = Object.entries(countryCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
   const totalCount = sorted.reduce((s, [, v]) => s + v, 0) || 1;
 
+  if (!visitorList && !cityList && !regionList) return;
+
   if (sorted.length === 0) {
     const empty = `<div style="padding:16px 8px;text-align:center;color:var(--text-tertiary);font-size:12px">${isZh ? '暂无访客数据' : 'No visitor data yet'}</div>`;
-    visitorList.innerHTML = empty;
-    cityList.innerHTML = empty;
-    regionList.innerHTML = empty;
+    if (visitorList) visitorList.innerHTML = empty;
+    if (cityList) cityList.innerHTML = empty;
+    if (regionList) regionList.innerHTML = empty;
     return;
   }
 
   // Visitor countries
-  visitorList.innerHTML = sorted.map(([cc, cnt], i) => {
+  if (visitorList) visitorList.innerHTML = sorted.map(([cc, cnt], i) => {
     const name = COUNTRY_CODE_NAMES[cc] || cc;
     const pct = Math.round((cnt / totalCount) * 100);
     return `
@@ -5933,9 +5942,12 @@ function renderVisitorSourcePanel() {
     : `<div style="padding:16px 8px;text-align:center;color:var(--text-tertiary);font-size:12px">${isZh ? '暂无地区数据' : 'Region data unavailable'}</div>`;
 
   // Update panel titles
-  document.getElementById('dashVisitorTitle').textContent = isZh ? '访客来源国家' : 'Visitor Origin Countries';
-  document.getElementById('dashCityTitle').textContent = isZh ? '热门城市' : 'Top Cities';
-  document.getElementById('dashRegionTitle').textContent = isZh ? '热门地区' : 'Top Regions';
+  const dashVisitorTitle = document.getElementById('dashVisitorTitle');
+  const dashCityTitle = document.getElementById('dashCityTitle');
+  const dashRegionTitle = document.getElementById('dashRegionTitle');
+  if (dashVisitorTitle) dashVisitorTitle.textContent = isZh ? '访客来源国家' : 'Visitor Origin Countries';
+  if (dashCityTitle) dashCityTitle.textContent = isZh ? '热门城市' : 'Top Cities';
+  if (dashRegionTitle) dashRegionTitle.textContent = isZh ? '热门地区' : 'Top Regions';
 }
 
 // ===== INTEREST MATRIX =====
@@ -5945,7 +5957,8 @@ function renderInterestMatrix(topCountries) {
   const grid = document.getElementById('dashMatrixGrid');
   const matrix = getInterestMatrix();
 
-  document.getElementById('dashMatrixHint').textContent = isZh
+  const dashMatrixHint = document.getElementById('dashMatrixHint');
+  if (dashMatrixHint) dashMatrixHint.textContent = isZh
     ? '访客来源 → 目标市场热度'
     : 'Visitor Origin → Target Market Heat';
 
@@ -5958,10 +5971,13 @@ function renderInterestMatrix(topCountries) {
   }
   const topSources = Object.entries(srcTotals).sort((a, b) => b[1] - a[1]).slice(0, 8);
 
+  if (!empty || !grid) return;
+
   if (topSources.length === 0 || topCountries.length === 0) {
     empty.style.display = 'flex';
     grid.innerHTML = '';
-    document.getElementById('dashMatrixEmptyText').textContent = isZh
+    const dashMatrixEmptyText = document.getElementById('dashMatrixEmptyText');
+    if (dashMatrixEmptyText) dashMatrixEmptyText.textContent = isZh
       ? '暂无兴趣矩阵数据 · 继续探索更多国家吧'
       : 'No interest matrix data yet · Keep exploring countries';
     return;
@@ -6059,22 +6075,28 @@ function renderTrendCharts() {
   const clickData = days.map(d => ({ date: d, clicks: dailyStats[d]?.clicks || 0 }));
   const maxClicks = Math.max(...clickData.map(d => d.clicks), 1);
   const clickChart = document.getElementById('dashClickChart');
-  clickChart.innerHTML = clickData.length > 0 ? clickData.map(d => {
-    const w = maxClicks > 0 ? Math.round((d.clicks / maxClicks) * 100) : 0;
-    const label = d.date.slice(5); // MM-DD
-    return `
-      <div class="dash-chart-date-row">
-        <div class="dash-chart-date-label">${label}</div>
-        <div class="dash-chart-date-bar-wrap">
-          <div class="dash-chart-date-bar" style="width:${w}%"></div>
-        </div>
-        <div class="dash-chart-date-val">${d.clicks > 0 ? d.clicks : '—'}</div>
-      </div>`;
-  }).join('') : `<div style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:12px">${isZh ? '暂无趋势数据' : 'No trend data yet'}</div>`;
+  const countryTrend = document.getElementById('dashCountryTrendChart');
+
+  if (!clickChart && !countryTrend) return;
+
+  if (clickChart) {
+    clickChart.innerHTML = clickData.length > 0 ? clickData.map(d => {
+      const w = maxClicks > 0 ? Math.round((d.clicks / maxClicks) * 100) : 0;
+      const label = d.date.slice(5); // MM-DD
+      return `
+        <div class="dash-chart-date-row">
+          <div class="dash-chart-date-label">${label}</div>
+          <div class="dash-chart-date-bar-wrap">
+            <div class="dash-chart-date-bar" style="width:${w}%"></div>
+          </div>
+          <div class="dash-chart-date-val">${d.clicks > 0 ? d.clicks : '—'}</div>
+        </div>`;
+    }).join('') : `<div style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:12px">${isZh ? '暂无趋势数据' : 'No trend data yet'}</div>`;
+  }
 
   // Country trend: top 5 target countries per day
-  const countryTrend = document.getElementById('dashCountryTrendChart');
   const ranked = getDashRanked(heatData).slice(0, 5);
+  if (!countryTrend) return;
   if (ranked.length === 0) {
     countryTrend.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:12px">${isZh ? '暂无数据' : 'No data yet'}</div>`;
     return;
@@ -6115,6 +6137,7 @@ async function loadDashWorldMap() {
     const topology = await topoRes.json();
 
     const svgEl = document.getElementById('dashboardSvg');
+    if (!svgEl) return;
     svgEl.innerHTML = '';
 
     const W = svgEl.parentElement.clientWidth || 900;
