@@ -4704,9 +4704,9 @@ function saveInterestMatrix(m) {
 }
 
 // ===== IP GEOLOCATION =====
-// ip-api.com free plan API key: https://ip-api.com/docs
-// For production, replace with your own key or proxy through Cloudflare Workers
-const IP_API_KEY = '66846719';
+// ipinfo.io — free plan 50k/month, supports browser CORS
+// Get your free token at https://ipinfo.io/signup
+const IPINFO_TOKEN = 'REPLACE_WITH_YOUR_IPINFO_TOKEN';
 let cachedGeo = null;
 
 async function detectVisitorLocation() {
@@ -4726,23 +4726,25 @@ async function detectVisitorLocation() {
     }
   } catch (_) {}
 
-  // 2. Try ip-api.com (free plan: 2000 req/day)
-  try {
-    const res = await fetch(`https://ip-api.com/json/?fields=status,country,countryCode,city,regionName&key=${IP_API_KEY}`);
-    if (res.ok) {
-      const json = await res.json();
-      if (json.status === 'success') {
-        cachedGeo = {
-          country: json.countryCode || '',
-          countryName: json.country || '',
-          city: json.city || '',
-          region: json.regionName || ''
-        };
-        persistGeoMeta(cachedGeo);
-        return cachedGeo;
+  // 2. Try ipinfo.io (free plan: 50k/month, CORS-supported)
+  if (IPINFO_TOKEN && IPINFO_TOKEN !== 'REPLACE_WITH_YOUR_IPINFO_TOKEN') {
+    try {
+      const res = await fetch(`https://ipinfo.io/json?token=${IPINFO_TOKEN}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.country) {
+          cachedGeo = {
+            country: json.country || '',
+            countryName: json.country_name || '',
+            city: json.city || '',
+            region: json.region || ''
+          };
+          persistGeoMeta(cachedGeo);
+          return cachedGeo;
+        }
       }
-    }
-  } catch (_) {}
+    } catch (_) {}
+  }
 
   // 3. Fallback: browser language
   const lang = navigator.language || navigator.userLanguage || '';
