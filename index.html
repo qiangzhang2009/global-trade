@@ -1283,6 +1283,7 @@
       :root { --sidebar-width: 280px; --banner-height: 220px; }
       .bio-banner { height: 220px; }
       .btn-sidebar-toggle { display: flex; }
+      .zoom-controls { display: none; }
       .sidebar {
         position: fixed;
         left: 0;
@@ -1306,12 +1307,16 @@
       .bio-banner-content { left: 20px; max-width: 200px; }
       .dash-grid-3 { grid-template-columns: 1fr; gap: 16px; }
       .dash-matrix-grid { font-size: 10px; }
+      .zoom-controls { display: none; }
+      .header-actions { overflow-x: auto; scrollbar-width: none; }
+      .header-actions::-webkit-scrollbar { display: none; }
     }
     @media (max-width: 480px) {
       :root { --banner-height: 180px; }
       .bio-banner { height: 180px; }
       .header-search { display: none; }
       .bio-legend { display: none; }
+      .zoom-controls { display: none; }
     }
 
     /* ===== ZOOM TOOL ===== */
@@ -4746,7 +4751,21 @@ async function detectVisitorLocation() {
     } catch (_) {}
   }
 
-  // 3. Fallback: browser language
+  // 3. Try browser Geolocation API (city + region level, requires HTTPS)
+  try {
+    const geoResult = await new Promise((resolve, reject) => {
+      if (!navigator.geolocation) { reject(new Error('no geolocation')); return; }
+      navigator.geolocation.getCurrentPosition(
+        pos => resolve(pos),
+        err => reject(err),
+        { timeout: 5000, maximumAge: 86400000 }
+      );
+    });
+    // Browser geolocation gives lat/lon but not city name — keep using ipinfo for city names
+    // The ipinfo.io result above already has city/region for this token
+  } catch (_) {}
+
+  // 4. Fallback: browser language
   const lang = navigator.language || navigator.userLanguage || '';
   const countryCode = lang.split('-')[1]?.toUpperCase() || 'XX';
   cachedGeo = { country: countryCode, countryName: 'Unknown', city: '', region: '' };
