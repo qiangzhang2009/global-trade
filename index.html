@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
   <!-- TradeRoot Analytics SDK — embedded via globaltrade tenant -->
   <script src="https://website-backend-admin.vercel.app/api/tracking-sdk?tenant=globaltrade" async></script>
   <style>
@@ -1041,6 +1043,238 @@
       }
     }
 
+    /* ===== DASHBOARD OVERLAY ===== */
+    #dashboardOverlay {
+      position: fixed; inset: 0; z-index: 9000;
+      background: var(--bg-primary);
+      overflow-y: auto;
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+    #dashboardOverlay.open { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .dash-header {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 32px;
+      height: var(--header-height);
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .dash-header-left { display: flex; align-items: center; gap: 12px; }
+    .dash-back-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: var(--radius-sm);
+      background: var(--bg-tertiary); border: 1px solid var(--border-default);
+      color: var(--text-secondary); font-size: 13px; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .dash-back-btn:hover { background: var(--bg-card); color: var(--text-primary); border-color: var(--accent-teal); }
+    .dash-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .dash-subtitle { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+
+    .dash-kpi-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      padding: 24px 32px 0;
+    }
+    .dash-kpi-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md); padding: 20px;
+    }
+    .dash-kpi-label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .dash-kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 500; color: var(--text-primary); }
+    .dash-kpi-delta { font-size: 12px; margin-top: 4px; }
+    .dash-kpi-delta.up { color: var(--accent-b2b-light); }
+    .dash-kpi-delta.neutral { color: var(--text-tertiary); }
+
+    .dash-body { padding: 24px 32px 48px; }
+    .dash-section-title {
+      font-size: 13px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;
+    }
+
+    /* World map */
+    .dash-map-wrap {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .dash-map-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .dash-map-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .dash-map-subtitle { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+    .dash-heat-legend {
+      display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-tertiary);
+    }
+    .dash-heat-scale { display: flex; gap: 2px; align-items: center; }
+    .dash-heat-cell { width: 14px; height: 14px; border-radius: 2px; }
+
+    #dashboardSvg { width: 100%; height: auto; display: block; }
+    #dashboardSvg .country { cursor: pointer; transition: opacity 0.2s; }
+    #dashboardSvg .country:hover { opacity: 0.85; }
+    #dashboardSvg .country.no-data { fill: var(--bg-tertiary); }
+    #dashboardSvg text { font-family: 'DM Sans', sans-serif; pointer-events: none; }
+
+    /* Ranking + charts */
+    .dash-grid-2 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    .dash-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg); padding: 24px;
+    }
+    .dash-rank-list { display: flex; flex-direction: column; gap: 2px; }
+    .dash-rank-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: var(--radius-sm);
+      cursor: pointer; transition: background 0.12s;
+    }
+    .dash-rank-item:hover { background: var(--bg-tertiary); }
+    .dash-rank-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-tertiary);
+      width: 20px; text-align: right; flex-shrink: 0;
+    }
+    .dash-rank-flag { font-size: 16px; flex-shrink: 0; }
+    .dash-rank-name { font-size: 13px; color: var(--text-primary); flex: 1; }
+    .dash-rank-bar-wrap { flex: 2; height: 4px; background: var(--bg-tertiary); border-radius: 2px; overflow: hidden; }
+    .dash-rank-bar { height: 100%; border-radius: 2px; transition: width 0.6s cubic-bezier(0,0,0.2,1); }
+    .dash-rank-count {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--text-secondary); flex-shrink: 0;
+    }
+
+    /* Bar chart */
+    .dash-bar-chart { display: flex; flex-direction: column; gap: 10px; }
+    .dash-bar-row { display: flex; align-items: center; gap: 10px; }
+    .dash-bar-label { font-size: 12px; color: var(--text-secondary); width: 80px; flex-shrink: 0; text-align: right; }
+    .dash-bar-track { flex: 1; height: 18px; background: var(--bg-tertiary); border-radius: 9px; overflow: hidden; }
+    .dash-bar-fill { height: 100%; border-radius: 9px; transition: width 0.7s cubic-bezier(0,0,0.2,1); display: flex; align-items: center; padding-left: 8px; }
+    .dash-bar-text { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.9); white-space: nowrap; }
+    .dash-bar-value { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-secondary); width: 40px; flex-shrink: 0; }
+
+    /* Visitor analytics panels */
+    .dash-grid-3 {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;
+    }
+    .dash-card-title {
+      font-size: 13px; font-weight: 600; color: var(--text-primary);
+      margin-bottom: 16px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .dash-visitor-list { display: flex; flex-direction: column; gap: 2px; }
+    .dash-visitor-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 8px; border-radius: var(--radius-sm); cursor: pointer;
+      transition: background 0.12s;
+    }
+    .dash-visitor-item:hover { background: var(--bg-tertiary); }
+    .dash-visitor-item-name { font-size: 13px; color: var(--text-primary); flex: 1; }
+    .dash-visitor-item-count {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      color: var(--accent-teal-light); font-weight: 500;
+    }
+    .dash-visitor-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      background: var(--accent-teal);
+    }
+
+    /* Section hint subtitle */
+    .dash-section-hint {
+      font-size: 11px; font-weight: 400; color: var(--text-tertiary);
+      margin-left: 8px; text-transform: none; letter-spacing: 0;
+    }
+
+    /* Interest matrix */
+    .dash-matrix-wrap { position: relative; min-height: 120px; }
+    .dash-empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 120px; gap: 10px; color: var(--text-tertiary);
+    }
+    .dash-empty-state svg { opacity: 0.3; }
+    .dash-empty-state p { font-size: 13px; }
+    .dash-matrix-grid {
+      display: flex; flex-direction: column; gap: 1px; overflow-x: auto; padding-bottom: 4px;
+    }
+    .dash-matrix-row {
+      display: flex; align-items: center; gap: 1px; min-width: 600px;
+    }
+    .dash-matrix-src {
+      font-size: 11px; color: var(--text-secondary); width: 80px; flex-shrink: 0;
+      text-align: right; padding-right: 8px; font-family: 'JetBrains Mono', monospace;
+    }
+    .dash-matrix-cell {
+      height: 22px; min-width: 22px; border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-family: 'JetBrains Mono', monospace;
+      font-weight: 500; cursor: pointer; transition: transform 0.1s;
+    }
+    .dash-matrix-cell:hover { transform: scale(1.1); z-index: 1; }
+    .dash-matrix-header-row {
+      display: flex; align-items: center; gap: 1px; min-width: 600px; margin-bottom: 4px;
+      padding-left: 88px;
+    }
+    .dash-matrix-header-cell {
+      height: 22px; min-width: 22px; display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-family: 'JetBrains Mono', monospace;
+      color: var(--text-tertiary); cursor: default;
+    }
+    .dash-matrix-legend {
+      display: flex; align-items: center; gap: 6px; margin-top: 12px;
+      font-size: 11px; color: var(--text-tertiary);
+    }
+    .dash-matrix-legend-scale { display: flex; gap: 2px; }
+    .dash-matrix-legend-cell {
+      width: 16px; height: 16px; border-radius: 3px;
+    }
+
+    /* Trend charts */
+    .dash-chart-area {
+      min-height: 120px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .dash-chart-row {
+      display: flex; align-items: center; gap: 10px; font-size: 12px;
+    }
+    .dash-chart-label { color: var(--text-secondary); width: 60px; flex-shrink: 0; font-size: 11px; }
+    .dash-chart-bar-wrap { flex: 1; height: 18px; background: var(--bg-tertiary); border-radius: 9px; overflow: hidden; }
+    .dash-chart-bar { height: 100%; border-radius: 9px; transition: width 0.6s cubic-bezier(0,0,0.2,1); }
+    .dash-chart-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-secondary); width: 40px; flex-shrink: 0; text-align: right; }
+    .dash-chart-date-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+    .dash-chart-date-label { font-size: 10px; color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; width: 60px; flex-shrink: 0; }
+    .dash-chart-date-bar-wrap { flex: 1; height: 20px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; }
+    .dash-chart-date-bar { height: 100%; background: var(--accent-teal); border-radius: 4px; opacity: 0.6; transition: width 0.5s ease; }
+    .dash-chart-date-val { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent-teal-light); width: 36px; flex-shrink: 0; text-align: right; }
+
+    /* Time filter pills */
+    .dash-time-filter { display: flex; gap: 6px; }
+    .dash-time-pill {
+      padding: 4px 12px; border-radius: 20px; font-size: 12px;
+      border: 1px solid var(--border-default); color: var(--text-secondary);
+      background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+    .dash-time-pill:hover { border-color: var(--accent-teal); color: var(--accent-teal); }
+    .dash-time-pill.active { background: var(--accent-teal); border-color: var(--accent-teal); color: #0b0f19; font-weight: 600; }
+
+    .dash-empty-map {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 300px; gap: 12px; color: var(--text-tertiary);
+    }
+    .dash-empty-map svg { opacity: 0.3; }
+    .dash-empty-map p { font-size: 13px; }
+
+    .dash-toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      background: var(--accent-teal); color: #0b0f19;
+      padding: 10px 18px; border-radius: var(--radius-md);
+      font-size: 13px; font-weight: 600;
+      opacity: 0; transform: translateY(8px); transition: all 0.2s;
+      pointer-events: none;
+    }
+    .dash-toast.show { opacity: 1; transform: translateY(0); }
+
+    [data-theme="light"] .dash-heat-cell:nth-child(1) { background: #e8e2d8; }
+    [data-theme="dark"] .dash-heat-cell:nth-child(1) { background: #1a2235; }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 1024px) {
       .channels-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
@@ -1070,6 +1304,8 @@
       .detail-panel { width: 100vw; }
       .bio-legend { gap: 12px; }
       .bio-banner-content { left: 20px; max-width: 200px; }
+      .dash-grid-3 { grid-template-columns: 1fr; gap: 16px; }
+      .dash-matrix-grid { font-size: 10px; }
     }
     @media (max-width: 480px) {
       :root { --banner-height: 180px; }
@@ -1193,6 +1429,9 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         <span class="fav-badge" id="favBadge" style="display:none"></span>
       </button>
+      <button class="btn-icon dashboard-btn" onclick="showDashboard()" title="数据后台" id="dashboardBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </button>
     </div>
   </header>
 
@@ -1293,6 +1532,130 @@
     <svg class="notification-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     <span id="notificationText"></span>
   </div>
+
+  <!-- DASHBOARD OVERLAY -->
+  <div id="dashboardOverlay">
+    <div class="dash-header">
+      <div class="dash-header-left">
+        <button class="dash-back-btn" onclick="closeDashboard()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <span id="dashBackLabel">返回导航</span>
+        </button>
+        <div>
+          <div class="dash-title" id="dashTitle">数据后台</div>
+          <div class="dash-subtitle" id="dashSubtitle">点击热度分析 · 热力图 + 国家排名</div>
+        </div>
+      </div>
+      <div class="dash-time-filter" id="dashTimeFilter">
+        <button class="dash-time-pill active" onclick="setDashPeriod(this, 'all')" data-period="all">全部时间</button>
+        <button class="dash-time-pill" onclick="setDashPeriod(this, '7d')" data-period="7d">近7天</button>
+        <button class="dash-time-pill" onclick="setDashPeriod(this, '30d')" data-period="30d">近30天</button>
+      </div>
+    </div>
+
+    <div class="dash-kpi-row" id="dashKPIs">
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-label" id="kpiLabel1">被访问国家</div>
+        <div class="dash-kpi-value" id="kpiCountries">0</div>
+        <div class="dash-kpi-delta up" id="kpiDelta1">已采集热度数据</div>
+      </div>
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-label" id="kpiLabel2">总点击次数</div>
+        <div class="dash-kpi-value" id="kpiTotalClicks">0</div>
+        <div class="dash-kpi-delta neutral" id="kpiDelta2">累计热度记录</div>
+      </div>
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-label" id="kpiLabel3">热度冠军</div>
+        <div class="dash-kpi-value" id="kpiTopCountry" style="font-size:20px;">—</div>
+        <div class="dash-kpi-delta up" id="kpiDelta3">点击最多</div>
+      </div>
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-label" id="kpiLabel4">活跃国家</div>
+        <div class="dash-kpi-value" id="kpiActive">0</div>
+        <div class="dash-kpi-delta neutral" id="kpiDelta4">过去30天有访问</div>
+      </div>
+    </div>
+
+    <div class="dash-body">
+      <div class="dash-section-title" id="dashSection1">世界地图热力图</div>
+      <div class="dash-map-wrap">
+        <div class="dash-map-header">
+          <div>
+            <div class="dash-map-title" id="dashMapTitle">全球点击热度</div>
+            <div class="dash-map-subtitle" id="dashMapSubtitle">颜色越深 = 点击越多 · 点击地图查看详情</div>
+          </div>
+          <div class="dash-heat-legend" id="dashHeatLegend">
+            <span>低</span>
+            <div class="dash-heat-scale" id="heatScale"></div>
+            <span>高</span>
+          </div>
+        </div>
+        <div id="dashboardSvgWrap">
+          <div class="dash-empty-map" id="dashEmptyMap">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <p id="dashEmptyText">暂无热度数据 · 先去探索一些国家吧</p>
+          </div>
+          <svg id="dashboardSvg" style="display:none"></svg>
+        </div>
+      </div>
+
+      <div class="dash-section-title" id="dashSection2">国家热度排名</div>
+      <div class="dash-grid-2">
+        <div class="dash-card">
+          <div class="dash-rank-list" id="dashRankList"></div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-bar-chart" id="dashBarChart"></div>
+        </div>
+      </div>
+
+      <!-- 新增：访客来源分析 -->
+      <div class="dash-section-title" id="dashSection3">访客来源分析</div>
+      <div class="dash-grid-3">
+        <div class="dash-card">
+          <div class="dash-card-title" id="dashVisitorTitle">访客来源国家</div>
+          <div class="dash-visitor-list" id="dashVisitorList"></div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-title" id="dashCityTitle">热门城市</div>
+          <div class="dash-visitor-list" id="dashCityList"></div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-title" id="dashRegionTitle">热门地区</div>
+          <div class="dash-visitor-list" id="dashRegionList"></div>
+        </div>
+      </div>
+
+      <!-- 新增：兴趣矩阵（来源国 × 目标国） -->
+      <div class="dash-section-title" id="dashSection4">兴趣矩阵
+        <span class="dash-section-hint" id="dashMatrixHint">访客来源 → 目标市场热度</span>
+      </div>
+      <div class="dash-card" style="margin-bottom:0">
+        <div class="dash-matrix-wrap" id="dashMatrixWrap">
+          <div class="dash-empty-state" id="dashMatrixEmpty">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            <p id="dashMatrixEmptyText">暂无兴趣矩阵数据</p>
+          </div>
+          <div class="dash-matrix-grid" id="dashMatrixGrid"></div>
+        </div>
+      </div>
+
+      <!-- 新增：趋势图表 -->
+      <div class="dash-section-title" id="dashSection5">趋势数据</div>
+      <div class="dash-grid-2">
+        <div class="dash-card">
+          <div class="dash-card-title" id="dashTrendTitle">日点击量趋势（近30天）</div>
+          <div class="dash-chart-area" id="dashClickChart"></div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-title" id="dashCountryTrendTitle">热门目标市场趋势（近30天）</div>
+          <div class="dash-chart-area" id="dashCountryTrendChart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-toast" id="dashToast"></div>
 </div>
 
 <script>
@@ -1307,6 +1670,33 @@ const TRADEDATA = {
           id: "east-asia",
           name: { zh: "东亚", en: "East Asia" },
           countries: [
+            {
+              id: "china",
+              name: { zh: "中国", en: "China" },
+              flag: "CN",
+              channels: {
+                official: [
+                  { name: "中国国际贸易促进委员会CCPIT", url: "https://www.ccpit.org", desc: { zh: "中国最大官方贸易促进机构，覆盖全球89个国家设有代表处，配套商事认证、法律服务、海事仲裁全链条", en: "China's largest official trade promotion agency with representatives in 89 countries, offering commercial certification, legal services and maritime arbitration" }, tags: ["官方", "贸易促进", "法律", "认证"] },
+                  { name: "中国国际商会CCOIC", url: "https://www.ccoic.cn", desc: { zh: "中国国际贸易促进委员会旗下商会组织，对接全国贸促系统网络", en: "Chamber under CCPIT connecting to the national trade promotion network" }, tags: ["商会", "贸促"] },
+                  { name: "商务部外贸司-走出去公共服务", url: "https://www.mofcom.gov.cn", desc: { zh: "商务部官方对外贸易政策与境外投资信息服务门户", en: "Ministry of Commerce official portal for foreign trade policy and overseas investment info" }, tags: ["官方", "政策", "走出去"] },
+                  { name: "中国海关总署AEO认证", url: "http://www.customs.gov.cn", desc: { zh: "中国海关AEO（经认证的经营者）认证查询与通关便利化政策门户", en: "China Customs AEO certification lookup and clearance facilitation portal" }, tags: ["海关", "认证", "通关"] }
+                ],
+                b2b: [
+                  { name: "阿里巴巴国际站Alibaba.com", url: "https://www.alibaba.com", desc: { zh: "全球最大B2B跨境电商平台，超4000万活跃买家，覆盖200+国家，覆盖全品类出口品类", en: "World's largest B2B cross-border platform with 40M+ active buyers across 200+ countries" }, tags: ["B2B", "跨境", "全品类", "出口"] },
+                  { name: "中国制造网Made-in-China.com", url: "https://www.made-in-china.com", desc: { zh: "深耕中国制造业出口，工业设备、电子产品领域优势突出，超100万中国供应商", en: "Deep focus on Chinese manufacturing exports, strong in industrial equipment and electronics with 1M+ suppliers" }, tags: ["B2B", "工业", "制造", "出口"] },
+                  { name: "环球资源Global Sources", url: "https://www.globalsources.com", desc: { zh: "亚洲头部B2B平台，专注电子与移动电子、家居与礼品、时尚与服装品类", en: "Top Asian B2B platform specializing in electronics, home & gifts, and fashion" }, tags: ["B2B", "消费电子", "展会"] },
+                  { name: "敦煌网DHgate", url: "https://www.dhgate.com", desc: { zh: "中国领先小额B2B跨境平台，主打小额批发与一件代发，覆盖200+国家", en: "Leading Chinese small-order B2B cross-border platform covering 200+ countries" }, tags: ["B2B", "小额批发", "一件代发"] },
+                  { name: "焦点科技Made-in-China.com集团", url: "https://www.focustech.cn", desc: { zh: "中国制造网母公司，旗下拥有人才服务、保险经纪等外贸全链路服务", en: "Parent company of Made-in-China.com offering full-service foreign trade solutions" }, tags: ["B2B", "外贸服务"] },
+                  { name: "贸发网采购HKTDC Sourcing", url: "https://sourcing.hktdc.com", desc: { zh: "香港贸发局旗下采购平台，整合大湾区制造业与全球买家对接", en: "HKTDC sourcing platform connecting Greater Bay Area manufacturers with global buyers" }, tags: ["B2B", "大湾区", "采购"] }
+                ],
+                distribution: [
+                  { name: "全球速卖通AliExpress B2B", url: "https://www.aliexpress.com", desc: { zh: "阿里巴巴旗下小额B2B/B2C跨境平台，适合中小企业快速触达全球零售买家", en: "Alibaba's small-order B2B/B2C cross-border platform for SMEs to reach global retail buyers" }, tags: ["跨境", "零售", "小额"] },
+                  { name: "亚马逊全球开店Amazon Global Selling", url: "https://gs.amazon.cn", desc: { zh: "亚马逊中国卖家专属出海门户，覆盖亚马逊全球20大站点开店与运营支持", en: "Amazon's dedicated portal for Chinese sellers to sell across 20 global marketplaces" }, tags: ["跨境", "电商", "全球开店"] },
+                  { name: "eBay大中华区卖家中心", url: "https://www.ebay.cn", desc: { zh: "eBay大中华区卖家官方支持门户，覆盖欧美主流市场B2C出口", en: "eBay Greater China seller portal covering B2C exports to US and EU markets" }, tags: ["跨境", "B2C", "欧美"] },
+                  { name: "虾皮Shopee跨境业务", url: "https://www.shopee.cn", desc: { zh: "东南亚及拉丁美洲最大电商平台跨境卖家入驻门户", en: "Cross-border seller portal for Southeast Asia and Latin America's largest e-commerce platform" }, tags: ["跨境", "东南亚", "拉美", "电商"] }
+                ]
+              }
+            },
             {
               id: "japan",
               name: { zh: "日本", en: "Japan" },
@@ -4209,23 +4599,6 @@ const TRADEDATA = {
                 ],
                 distribution: []
               }
-            },
-            {
-              id: "taiwan-detail",
-              name: { zh: "中国台湾", en: "Taiwan" },
-              flag: "TW",
-              channels: {
-                official: [
-                  { name: "台湾贸易中心TAITRA", url: "https://www.taitra.org.tw", desc: { zh: "台湾地区官方贸易促进机构", en: "Taiwan's official trade promotion organization" }, tags: ["官方", "贸易促进"] },
-                  { name: "Taiwantrade", url: "https://www.taiwantrade.com", desc: { zh: "台湾官方B2B平台", en: "Taiwan's official B2B platform" }, tags: ["B2B", "官方"] },
-                  { name: "台湾区电机电子工业同业公会TEEMA", url: "https://www.teema.org.tw", desc: { zh: "台湾电子电机行业核心公会，覆盖电子元器件、半导体、通信设备、汽车电子", en: "Taiwan's top electronics and electrical machinery industry association" }, tags: ["商会", "电子", "半导体"] }
-                ],
-                b2b: [
-                  { name: "文笔天天网ttnet", url: "https://www.ttnet.net", desc: { zh: "台湾地区头部B2B平台，深耕工业制造、五金机械、电子元器件品类", en: "Taiwan's leading B2B platform for industrial manufacturing and electronics" }, tags: ["B2B", "工业", "五金"] },
-                  { name: "台湾经纬搜索B2B平台", url: "https://www.jw1688.com.tw", desc: { zh: "台湾本土B2B平台", en: "Taiwan's domestic B2B platform" }, tags: ["B2B"] }
-                ],
-                distribution: []
-              }
             }
           ]
         }
@@ -4265,11 +4638,212 @@ function track(eventName, data) {
   }
 }
 
+// ===== CLICK HEAT + VISITOR ANALYTICS =====
+const HEAT_KEY = 'tr_heat_v2';
+const VISITOR_KEY = 'tr_visitor_v1';
+const SESSION_KEY = 'tr_session_v1';
+
+function getHeatData() {
+  try { return JSON.parse(localStorage.getItem(HEAT_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveHeatData(data) {
+  localStorage.setItem(HEAT_KEY, JSON.stringify(data));
+}
+
+// Generate / retrieve a persistent anonymous session ID
+function getSessionId() {
+  let sid = sessionStorage.getItem(SESSION_KEY);
+  if (!sid) {
+    sid = 'sess_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    sessionStorage.setItem(SESSION_KEY, sid);
+  }
+  return sid;
+}
+
+// Visitor metadata stored once per session
+const VISITOR_KEY_V1 = 'tr_visitor_meta';
+function getVisitorMeta() {
+  try { return JSON.parse(localStorage.getItem(VISITOR_KEY_V1) || '{}'); }
+  catch { return {}; }
+}
+function saveVisitorMeta(meta) {
+  localStorage.setItem(VISITOR_KEY_V1, JSON.stringify(meta));
+}
+
+// Daily stats for trend charts
+const DAILY_KEY = 'tr_daily_v1';
+function getDailyStats() {
+  try { return JSON.parse(localStorage.getItem(DAILY_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveDailyStats(data) {
+  localStorage.setItem(DAILY_KEY, JSON.stringify(data));
+}
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+function bumpDailyStat(field) {
+  const data = getDailyStats();
+  const today = getTodayKey();
+  if (!data[today]) data[today] = { visits: 0, clicks: 0, countries: 0, uniqueSessions: 0, visitors: {} };
+  if (!data[today][field]) data[today][field] = 0;
+  data[today][field]++;
+  saveDailyStats(data);
+}
+
+// Interest matrix: visitor_source → target_country → click_count
+const MATRIX_KEY = 'tr_matrix_v1';
+function getInterestMatrix() {
+  try { return JSON.parse(localStorage.getItem(MATRIX_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveInterestMatrix(m) {
+  localStorage.setItem(MATRIX_KEY, JSON.stringify(m));
+}
+
+// ===== IP GEOLOCATION =====
+// ip-api.com free plan API key: https://ip-api.com/docs
+// For production, replace with your own key or proxy through Cloudflare Workers
+const IP_API_KEY = '66846719';
+let cachedGeo = null;
+
+async function detectVisitorLocation() {
+  if (cachedGeo) return cachedGeo;
+
+  // 1. Try Cloudflare's free geo endpoint (no API key, no rate limit)
+  try {
+    const res = await fetch('/cdn-cgi/trace');
+    if (res.ok) {
+      const text = await res.text();
+      const locMatch = text.match(/^loc=(.+)$/m);
+      if (locMatch) {
+        cachedGeo = { country: locMatch[1].trim(), countryName: '', city: '', region: '' };
+        persistGeoMeta(cachedGeo);
+        return cachedGeo;
+      }
+    }
+  } catch (_) {}
+
+  // 2. Try ip-api.com (free plan: 2000 req/day)
+  try {
+    const res = await fetch(`https://ip-api.com/json/?fields=status,country,countryCode,city,regionName&key=${IP_API_KEY}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.status === 'success') {
+        cachedGeo = {
+          country: json.countryCode || '',
+          countryName: json.country || '',
+          city: json.city || '',
+          region: json.regionName || ''
+        };
+        persistGeoMeta(cachedGeo);
+        return cachedGeo;
+      }
+    }
+  } catch (_) {}
+
+  // 3. Fallback: browser language
+  const lang = navigator.language || navigator.userLanguage || '';
+  const countryCode = lang.split('-')[1]?.toUpperCase() || 'XX';
+  cachedGeo = { country: countryCode, countryName: 'Unknown', city: '', region: '' };
+  persistGeoMeta(cachedGeo);
+  return cachedGeo;
+}
+
+function persistGeoMeta(geo) {
+  const meta = getVisitorMeta();
+  if (!meta.country) {
+    meta.country = geo.country;
+    meta.countryName = geo.countryName;
+    meta.city = geo.city;
+    meta.region = geo.region;
+    meta.firstSeen = new Date().toISOString();
+    meta.sessionCount = 1;
+  } else {
+    meta.lastSeen = new Date().toISOString();
+    meta.sessionCount = (meta.sessionCount || 1) + 1;
+  }
+  saveVisitorMeta(meta);
+}
+
+// countryId → ISO numeric code (used by world atlas TopoJSON)
+const COUNTRY_ATLAS_IDS = {
+  // East Asia
+  china: 156, japan: 392, south_korea: 410, hong_kong: 344, taiwan: 158, mongolia: 496,
+  // Southeast Asia
+  singapore: 702, thailand: 764, vietnam: 704, indonesia: 360, philippines: 608,
+  malaysia: 458, cambodia: 116, myanmar: 104, laos: 418, brunei: 96,
+  // South Asia
+  india: 356, pakistan: 586, bangladesh: 50, sri_lanka: 144, nepal: 524, bhutan: 64,
+  // West / Central Asia
+  uae: 784, saudi_arabia: 682, turkey: 792, qatar: 634, kuwait: 414,
+  oman: 512, bahrain: 48, iran: 364, israel: 376, kazakhstan: 398,
+  uzbekistan: 860, turkmenistan: 795, azerbaijan: 31, georgia: 268, armenia: 51,
+  jordan: 400, lebanon: 422, iraq: 368, syria: 760, yemen: 887,
+  // Europe
+  germany: 276, france: 250, uk: 826, netherlands: 528, belgium: 56,
+  switzerland: 756, austria: 40, italy: 380, spain: 724, portugal: 620,
+  greece: 300, poland: 616, czech: 203, hungary: 348, romania: 642,
+  bulgaria: 100, croatia: 191, serbia: 688, slovenia: 705, slovakia: 703,
+  lithuania: 440, latvia: 428, estonia: 233, sweden: 752, denmark: 208,
+  finland: 246, norway: 578, ireland: 372, luxembourg: 442, iceland: 352,
+  albania: 8, north_macedonia: 807, montenegro: 499, bosnia_herzegovina: 70,
+  moldova: 498, belarus: 112, ukraine: 804, russia: 643,
+  // Africa
+  egypt: 818, algeria: 12, morocco: 504, tunisia: 788, libya: 434,
+  kenya: 404, tanzania: 834, ethiopia: 231, uganda: 800, rwanda: 646,
+  south_africa: 710, nigeria: 566, ghana: 288, ivory_coast: 384, senegal: 686,
+  cameroon: 120, democratic_republic_of_congo: 180, angola: 24, mozambique: 508,
+  zambia: 894, zimbabwe: 716, botswana: 72, namibia: 516, ivory_coast_ci: 384,
+  ivory_coast_cote: 384, ivory_coast_civ: 384,
+  // Americas
+  usa: 840, canada: 124, mexico: 484, panama: 591, costa_rica: 188,
+  dominican_republic: 214, jamaica: 388, cuba: 192, haiti: 332,
+  colombia: 170, peru: 604, brazil: 76, argentina: 32, chile: 152,
+  venezuela: 862, ecuador: 218, bolivia: 68, paraguay: 600, uruguay: 858,
+  // Oceania
+  australia: 36, new_zealand: 554, papua_new_guinea: 598, fiji: 242,
+  solomon_islands: 90, vanuatu: 548, samoa: 882, tonga: 776,
+};
+
+window.recordCountryClick = async function(countryId, countryName) {
+  if (!countryId) return;
+  const data = getHeatData();
+  if (!data[countryId]) {
+    data[countryId] = { clicks: 0, name: countryName || countryId, firstSeen: new Date().toISOString() };
+  }
+  data[countryId].clicks++;
+  data[countryId].lastSeen = new Date().toISOString();
+  saveHeatData(data);
+
+  // Record to interest matrix: visitor_source_country → target_country
+  if (!cachedGeo) await detectVisitorLocation();
+  const srcCountry = cachedGeo?.country || 'XX';
+  const matrix = getInterestMatrix();
+  if (!matrix[srcCountry]) matrix[srcCountry] = {};
+  if (!matrix[srcCountry][countryId]) matrix[srcCountry][countryId] = 0;
+  matrix[srcCountry][countryId]++;
+  saveInterestMatrix(matrix);
+
+  // Bump daily click stat
+  bumpDailyStat('clicks');
+
+  // Track in zxqTrack SDK if available
+  track('country_click', {
+    country_id: countryId,
+    country_name: countryName,
+    visitor_country: srcCountry,
+    session_id: getSessionId()
+  });
+};
+
 // ===== HELPERS =====
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 const flagMap = {
-  JP:'🇯🇵', KR:'🇰🇷', HK:'🇭🇰', TW:'🇹🇼', MN:'🇲🇳',
+  CN:'🇨🇳', JP:'🇯🇵', KR:'🇰🇷', HK:'🇭🇰', TW:'🇹🇼', MN:'🇲🇳',
   SG:'🇸🇬', TH:'🇹🇭', VN:'🇻🇳', ID:'🇮🇩', PH:'🇵🇭', MY:'🇲🇾', KH:'🇰🇭', MM:'🇲🇲', LA:'🇱🇦', BN:'🇧🇳',
   IN:'🇮🇳', PK:'🇵🇰', BD:'🇧🇩', LK:'🇱🇰',
   AE:'🇦🇪', SA:'🇸🇦', TR:'🇹🇷', QA:'🇶🇦', KW:'🇰🇼', OM:'🇴🇲', BH:'🇧🇭', IR:'🇮🇷', IL:'🇮🇱', KZ:'🇰🇿', UZ:'🇺🇿',
@@ -4317,6 +4891,18 @@ function getFlag(flag) { return flagMap[flag] || '🌐'; }
 function countChannels(country) {
   if (!country || !country.channels) return 0;
   return Object.values(country.channels).flat().length;
+}
+
+function findCountry(countryId) {
+  if (typeof TRADEDATA === 'undefined') return null;
+  for (const cont of TRADEDATA.continents) {
+    for (const region of cont.regions || []) {
+      for (const c of region.countries || []) {
+        if (c.id === countryId) return c;
+      }
+    }
+  }
+  return null;
 }
 function countCountryChannels(continent) {
   let total = 0;
@@ -4564,6 +5150,8 @@ window.selectCountry = function(contId, regionId, countryId) {
   state.currentRegion = regionId;
   state.currentCountry = countryId;
   state.showingFavorites = false;
+  const country = findCountry(countryId);
+  recordCountryClick(countryId, country ? t(country.name) : countryId);
   track('navigate', { action: 'select_country', continent: contId, region: regionId, country: countryId });
   renderSidebar();
   renderContent();
@@ -4961,6 +5549,622 @@ function showFavorites() {
   track('navigate', { action: 'view_favorites', count: state.favorites.length });
   renderContent();
 }
+
+// ===== DASHBOARD =====
+let dashPeriod = 'all';
+let worldMapLoaded = false;
+let dashCountryData = [];
+
+window.showDashboard = function() {
+  document.getElementById('dashboardOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  track('dashboard', { action: 'open_dashboard' });
+  if (!worldMapLoaded) {
+    loadDashWorldMap();
+    worldMapLoaded = true;
+  }
+  renderDashboard();
+};
+
+window.closeDashboard = function() {
+  document.getElementById('dashboardOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+window.jumpToCountry = function(countryId) {
+  closeDashboard();
+  if (countryId) {
+    // Find the country in TRADEDATA to get contId/regionId
+    for (const cont of TRADEDATA.continents) {
+      for (const region of cont.regions || []) {
+        const found = region.countries?.find(c => c.id === countryId);
+        if (found) {
+          setTimeout(() => selectCountry(cont.id, region.id, countryId), 100);
+          return;
+        }
+      }
+    }
+  }
+  // If no countryId or not found, go to homepage
+  setTimeout(() => selectCountry(null, null, null), 100);
+};
+
+window.setDashPeriod = function(btn, period) {
+  dashPeriod = period;
+  document.querySelectorAll('.dash-time-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderDashboard();
+};
+
+function filterHeatByPeriod(data, period) {
+  period = period || dashPeriod;
+  const now = Date.now();
+  const cutoff = { all: 0, '7d': 7 * 86400000, '30d': 30 * 86400000 }[period] || 0;
+  if (cutoff === 0) return data;
+  const cutoffTime = now - cutoff;
+  const filtered = {};
+  for (const [id, entry] of Object.entries(data)) {
+    if (!entry.lastSeen) { filtered[id] = { ...entry, clicks: 0 }; continue; }
+    const lastSeen = new Date(entry.lastSeen).getTime();
+    if (lastSeen >= cutoffTime) filtered[id] = entry;
+    else filtered[id] = { ...entry, clicks: 0 };
+  }
+  return filtered;
+}
+
+function getDashRanked(data) {
+  return Object.entries(data)
+    .filter(([, v]) => v.clicks > 0)
+    .sort((a, b) => b[1].clicks - a[1].clicks)
+    .slice(0, 20);
+}
+
+function renderDashboard() {
+  const rawData = getHeatData();
+  const data = filterHeatByPeriod(rawData);
+  const ranked = getDashRanked(data);
+
+  const totalClicks = ranked.reduce((s, [, v]) => s + v.clicks, 0);
+  const visitedCountries = ranked.length;
+
+  // KPI 1: visited countries
+  document.getElementById('kpiCountries').textContent = visitedCountries;
+  document.getElementById('kpiLabel1').textContent = state.lang === 'zh' ? '已访问国家' : 'Countries Visited';
+
+  // KPI 2: total clicks
+  document.getElementById('kpiTotalClicks').textContent = totalClicks;
+  document.getElementById('kpiLabel2').textContent = state.lang === 'zh' ? '总点击次数' : 'Total Clicks';
+
+  // KPI 3: top country
+  const top = ranked[0];
+  if (top) {
+    const topName = top[1].name || top[0];
+    document.getElementById('kpiTopCountry').textContent = topName;
+  } else {
+    document.getElementById('kpiTopCountry').textContent = '—';
+  }
+  document.getElementById('kpiLabel3').textContent = state.lang === 'zh' ? '热度冠军' : 'Top Country';
+
+  // KPI 4: active countries (last 30d)
+  const data30d = filterHeatByPeriod(rawData, '30d');
+  const active30 = Object.values(data30d).filter(v => v.clicks > 0).length;
+  document.getElementById('kpiActive').textContent = active30;
+  document.getElementById('kpiLabel4').textContent = state.lang === 'zh' ? '活跃国家' : 'Active Countries';
+
+  // Labels
+  document.getElementById('dashTitle').textContent = state.lang === 'zh' ? '数据后台' : 'Analytics Dashboard';
+  document.getElementById('dashSubtitle').textContent = state.lang === 'zh' ? '点击热度分析 · 热力图 + 国家排名' : 'Click Heat Analytics · Heatmap + Rankings';
+  document.getElementById('dashBackLabel').textContent = state.lang === 'zh' ? '返回导航' : 'Back to Navigator';
+  document.getElementById('dashSection1').textContent = state.lang === 'zh' ? '世界地图热力图' : 'World Map Heatmap';
+  document.getElementById('dashSection2').textContent = state.lang === 'zh' ? '国家热度排名' : 'Country Heat Ranking';
+  document.getElementById('dashSection3').textContent = state.lang === 'zh' ? '访客来源分析' : 'Visitor Origin Analysis';
+  document.getElementById('dashSection4').textContent = state.lang === 'zh' ? '兴趣矩阵' : 'Interest Matrix';
+  document.getElementById('dashSection5').textContent = state.lang === 'zh' ? '趋势数据' : 'Trend Analytics';
+  document.getElementById('dashMatrixHint').textContent = state.lang === 'zh' ? '访客来源 → 目标市场热度' : 'Visitor Origin → Target Market Heat';
+  document.getElementById('dashMatrixEmptyText').textContent = state.lang === 'zh' ? '暂无兴趣矩阵数据 · 继续探索更多国家吧' : 'No interest matrix data yet · Keep exploring countries';
+  document.getElementById('dashMapTitle').textContent = state.lang === 'zh' ? '全球点击热度' : 'Global Click Heat';
+  document.getElementById('dashMapSubtitle').textContent = state.lang === 'zh' ? '颜色越深 = 点击越多 · 点击地图查看详情' : 'Darker = More clicks · Click a country to navigate';
+  document.getElementById('dashEmptyText').textContent = state.lang === 'zh' ? '暂无热度数据 · 先去探索一些国家吧' : 'No heat data yet · Go explore some countries first';
+
+  // Render heatmap
+  renderDashHeatmap(data, ranked);
+
+  // Render ranking list
+  renderDashRankList(ranked, totalClicks);
+
+  // Render bar chart
+  renderDashBarChart(ranked.slice(0, 8), totalClicks);
+
+  // Render visitor analytics panels
+  renderVisitorSourcePanel();
+  renderInterestMatrix(ranked.slice(0, 8));
+  renderTrendCharts();
+}
+
+function getHeatColor(clicks, maxClicks, isDark) {
+  if (clicks === 0) return isDark ? '#1a2235' : '#e8e2d8';
+  const t = maxClicks > 1 ? Math.log(clicks + 1) / Math.log(maxClicks + 1) : 0;
+  if (isDark) {
+    const r = Math.round(14 + t * (0 - 14));
+    const g = Math.round(184 + t * (30 - 184));
+    const b = Math.round(166 + t * (60 - 166));
+    return `rgb(${r},${g},${b})`;
+  } else {
+    const r = Math.round(232 + t * (180 - 232));
+    const g = Math.round(220 + t * (90 - 220));
+    const b = Math.round(200 + t * (60 - 200));
+    return `rgb(${r},${g},${b})`;
+  }
+}
+
+function renderDashHeatmap(data, ranked) {
+  const svgEl = document.getElementById('dashboardSvg');
+  const emptyEl = document.getElementById('dashEmptyMap');
+
+  if (ranked.length === 0) {
+    svgEl.style.display = 'none';
+    emptyEl.style.display = 'flex';
+    return;
+  }
+  svgEl.style.display = 'block';
+  emptyEl.style.display = 'none';
+
+  const maxClicks = ranked[0] ? ranked[0][1].clicks : 1;
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+
+  // Heat legend
+  const heatScale = document.getElementById('heatScale');
+  heatScale.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const t = i / 5;
+    const cell = document.createElement('div');
+    cell.className = 'dash-heat-cell';
+    cell.style.background = getHeatColor(Math.round(t * maxClicks), maxClicks, isDark);
+    heatScale.appendChild(cell);
+  }
+
+  // Color all countries on the SVG
+  const countries = svgEl.querySelectorAll('.country');
+  countries.forEach(path => {
+    const id = path.getAttribute('data-id');
+    if (id && data[id] && data[id].clicks > 0) {
+      path.style.fill = getHeatColor(data[id].clicks, maxClicks, isDark);
+      path.style.stroke = '#0b0f19';
+      path.style.strokeWidth = '0.3';
+      path.setAttribute('data-clicks', data[id].clicks);
+    } else {
+      path.style.fill = isDark ? '#1a2235' : '#e8e2d8';
+      path.style.stroke = isDark ? '#243450' : '#c8bfb0';
+      path.style.strokeWidth = '0.3';
+      path.removeAttribute('data-clicks');
+    }
+  });
+}
+
+function renderDashRankList(ranked, total) {
+  const list = document.getElementById('dashRankList');
+  if (ranked.length === 0) {
+    list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px">${state.lang === 'zh' ? '暂无数据' : 'No data yet'}</div>`;
+    return;
+  }
+  list.innerHTML = ranked.map(([id, entry], i) => {
+    const flag = flagMap[id.replace(/_/g, '-').toUpperCase()] || flagMap[id.toUpperCase()] || '🌐';
+    const pct = total > 0 ? Math.round((entry.clicks / total) * 100) : 0;
+    const barColor = i === 0 ? 'var(--accent-teal)' : i < 3 ? 'var(--accent-official)' : 'var(--accent-b2b)';
+    const numColor = i === 0 ? 'var(--accent-teal)' : i < 3 ? 'var(--accent-official)' : 'var(--text-tertiary)';
+    return `
+      <div class="dash-rank-item" onclick="jumpToCountry('${id}')">
+        <span class="dash-rank-num" style="color:${numColor}">${i + 1}</span>
+        <span class="dash-rank-flag">${flag}</span>
+        <span class="dash-rank-name">${entry.name || id}</span>
+        <div class="dash-rank-bar-wrap">
+          <div class="dash-rank-bar" style="width:${pct}%;background:${barColor}"></div>
+        </div>
+        <span class="dash-rank-count">${entry.clicks}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderDashBarChart(ranked, total) {
+  const chart = document.getElementById('dashBarChart');
+  if (ranked.length === 0) {
+    chart.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px">${state.lang === 'zh' ? '暂无数据' : 'No data yet'}</div>`;
+    return;
+  }
+  const maxClicks = ranked[0] ? ranked[0][1].clicks : 1;
+  const labels = state.lang === 'zh'
+    ? ['亚洲', '欧洲', '非洲', '美洲', '大洋洲']
+    : ['Asia', 'Europe', 'Africa', 'Americas', 'Oceania'];
+  const colors = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#14b8a6'];
+  const contMap = { asia: 0, europe: 1, africa: 2, americas: 3, oceania: 4 };
+
+  const contTotals = [0, 0, 0, 0, 0];
+  for (const [id, entry] of Object.entries(getHeatData())) {
+    if (entry.clicks <= 0) continue;
+    const c = findCountry(id);
+    if (c) {
+      for (const cont of TRADEDATA.continents) {
+        for (const region of cont.regions || []) {
+          if (region.countries?.find(rc => rc.id === id)) {
+            contTotals[contMap[cont.id] ?? 0] += entry.clicks;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  const grandTotal = contTotals.reduce((a, b) => a + b, 0) || 1;
+
+  chart.innerHTML = contTotals.map((clicks, i) => {
+    const pct = Math.round((clicks / grandTotal) * 100);
+    return `
+      <div class="dash-bar-row">
+        <span class="dash-bar-label">${labels[i]}</span>
+        <div class="dash-bar-track">
+          <div class="dash-bar-fill" style="width:${pct}%;background:${colors[i]}">
+            ${pct > 5 ? `<span class="dash-bar-text">${pct}%</span>` : ''}
+          </div>
+        </div>
+        <span class="dash-bar-value">${clicks}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== VISITOR SOURCE PANEL =====
+const COUNTRY_CODE_NAMES = {
+  CN: '中国', US: '美国', DE: '德国', JP: '日本', GB: '英国', FR: '法国',
+  KR: '韩国', IN: '印度', BR: '巴西', RU: '俄罗斯', IT: '意大利', AU: '澳大利亚',
+  CA: '加拿大', ES: '西班牙', MX: '墨西哥', NL: '荷兰', SG: '新加坡', TH: '泰国',
+  VN: '越南', ID: '印尼', MY: '马来西亚', PH: '菲律宾', AE: '阿联酋', SA: '沙特阿拉伯',
+  TR: '土耳其', PL: '波兰', SE: '瑞典', CH: '瑞士', NO: '挪威', DK: '丹麦',
+  FI: '芬兰', BE: '比利时', AT: '奥地利', IE: '爱尔兰', PT: '葡萄牙', GR: '希腊',
+  CZ: '捷克', HU: '匈牙利', RO: '罗马尼亚', UA: '乌克兰', ZA: '南非', EG: '埃及',
+  NG: '尼日利亚', KE: '肯尼亚', GH: '加纳', ET: '埃塞俄比亚', MA: '摩洛哥',
+  AR: '阿根廷', CL: '智利', CO: '哥伦比亚', PE: '秘鲁', VE: '委内瑞拉', EC: '厄瓜多尔',
+  NZ: '新西兰', PK: '巴基斯坦', BD: '孟加拉', LK: '斯里兰卡', NP: '尼泊尔',
+  MM: '缅甸', KH: '柬埔寨', LA: '老挝', UZ: '乌兹别克斯坦', KZ: '哈萨克斯坦',
+  QA: '卡塔尔', KW: '科威特', OM: '阿曼', BH: '巴林', IL: '以色列', JO: '约旦',
+  LB: '黎巴嫩', HK: '香港', TW: '台湾', XX: '未知'
+};
+
+function renderVisitorSourcePanel() {
+  const isZh = state.lang === 'zh';
+  const visitorList = document.getElementById('dashVisitorList');
+  const cityList = document.getElementById('dashCityList');
+  const regionList = document.getElementById('dashRegionList');
+  const meta = getVisitorMeta();
+  const dailyStats = getDailyStats();
+  const today = getTodayKey();
+  const todayData = dailyStats[today] || {};
+  const visitors = todayData.visitors || {};
+
+  // Count by country from daily visitors
+  const countryCounts = {};
+  for (const [cc, cnt] of Object.entries(visitors)) {
+    countryCounts[cc] = (countryCounts[cc] || 0) + cnt;
+  }
+
+  // Also aggregate from interest matrix sources (robust fallback)
+  const matrix = getInterestMatrix();
+  for (const src of Object.keys(matrix)) {
+    countryCounts[src] = (countryCounts[src] || 0) + 1;
+  }
+
+  // Also count from stored visitor meta
+  if (meta.country && meta.country !== 'XX') {
+    countryCounts[meta.country] = (countryCounts[meta.country] || 0) + 1;
+  }
+
+  const sorted = Object.entries(countryCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const totalCount = sorted.reduce((s, [, v]) => s + v, 0) || 1;
+
+  if (sorted.length === 0) {
+    const empty = `<div style="padding:16px 8px;text-align:center;color:var(--text-tertiary);font-size:12px">${isZh ? '暂无访客数据' : 'No visitor data yet'}</div>`;
+    visitorList.innerHTML = empty;
+    cityList.innerHTML = empty;
+    regionList.innerHTML = empty;
+    return;
+  }
+
+  // Visitor countries
+  visitorList.innerHTML = sorted.map(([cc, cnt], i) => {
+    const name = COUNTRY_CODE_NAMES[cc] || cc;
+    const pct = Math.round((cnt / totalCount) * 100);
+    return `
+      <div class="dash-visitor-item" onclick="jumpToCountry(null)" title="${cc}">
+        <span class="dash-visitor-item-name">${name}</span>
+        <span class="dash-visitor-item-count">${cnt} ${isZh ? '次' : 'visits'}</span>
+      </div>
+    `;
+  }).join('');
+
+  // Cities (from meta)
+  const cityCounts = {};
+  if (meta.city && meta.country) {
+    const key = `${meta.city}, ${meta.country}`;
+    cityCounts[key] = meta.sessionCount || 1;
+  }
+  const sortedCities = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  cityList.innerHTML = sortedCities.length > 0
+    ? sortedCities.map(([city, cnt]) => `
+        <div class="dash-visitor-item">
+          <span class="dash-visitor-item-name">${city}</span>
+          <span class="dash-visitor-item-count">${cnt} ${isZh ? '次' : 'visits'}</span>
+        </div>`).join('')
+    : `<div style="padding:16px 8px;text-align:center;color:var(--text-tertiary);font-size:12px">${isZh ? '暂无城市数据' : 'City data unavailable'}</div>`;
+
+  // Regions (from meta)
+  const regionCounts = {};
+  if (meta.region && meta.country) {
+    const key = `${meta.region}, ${meta.country}`;
+    regionCounts[key] = meta.sessionCount || 1;
+  }
+  const sortedRegions = Object.entries(regionCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  regionList.innerHTML = sortedRegions.length > 0
+    ? sortedRegions.map(([reg, cnt]) => `
+        <div class="dash-visitor-item">
+          <span class="dash-visitor-item-name">${reg}</span>
+          <span class="dash-visitor-item-count">${cnt} ${isZh ? '次' : 'visits'}</span>
+        </div>`).join('')
+    : `<div style="padding:16px 8px;text-align:center;color:var(--text-tertiary);font-size:12px">${isZh ? '暂无地区数据' : 'Region data unavailable'}</div>`;
+
+  // Update panel titles
+  document.getElementById('dashVisitorTitle').textContent = isZh ? '访客来源国家' : 'Visitor Origin Countries';
+  document.getElementById('dashCityTitle').textContent = isZh ? '热门城市' : 'Top Cities';
+  document.getElementById('dashRegionTitle').textContent = isZh ? '热门地区' : 'Top Regions';
+}
+
+// ===== INTEREST MATRIX =====
+function renderInterestMatrix(topCountries) {
+  const isZh = state.lang === 'zh';
+  const empty = document.getElementById('dashMatrixEmpty');
+  const grid = document.getElementById('dashMatrixGrid');
+  const matrix = getInterestMatrix();
+
+  document.getElementById('dashMatrixHint').textContent = isZh
+    ? '访客来源 → 目标市场热度'
+    : 'Visitor Origin → Target Market Heat';
+
+  // Determine top source countries
+  const srcTotals = {};
+  for (const [src, targets] of Object.entries(matrix)) {
+    let sum = 0;
+    for (const cnt of Object.values(targets)) sum += cnt;
+    srcTotals[src] = sum;
+  }
+  const topSources = Object.entries(srcTotals).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+  if (topSources.length === 0 || topCountries.length === 0) {
+    empty.style.display = 'flex';
+    grid.innerHTML = '';
+    document.getElementById('dashMatrixEmptyText').textContent = isZh
+      ? '暂无兴趣矩阵数据 · 继续探索更多国家吧'
+      : 'No interest matrix data yet · Keep exploring countries';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const targetIds = topCountries.map(([id]) => id);
+  const maxVal = Math.max(...Object.values(matrix).flatMap(t => Object.values(t)), 1);
+
+  // Color scale: low → high
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  function heatColor(val) {
+    if (!val || val === 0) return isDark ? '#1a2235' : '#e8e2d8';
+    const t = Math.log(val + 1) / Math.log(maxVal + 1);
+    if (isDark) {
+      const r = Math.round(14 + t * (0 - 14));
+      const g = Math.round(184 + t * (30 - 184));
+      const b = Math.round(166 + t * (60 - 166));
+      return `rgb(${r},${g},${b})`;
+    } else {
+      const r = Math.round(232 + t * (180 - 232));
+      const g = Math.round(220 + t * (90 - 220));
+      const b = Math.round(200 + t * (60 - 200));
+      return `rgb(${r},${g},${b})`;
+    }
+  }
+  function heatTextColor(val) {
+    if (!val || val === 0) return 'var(--text-tertiary)';
+    const t = Math.log(val + 1) / Math.log(maxVal + 1);
+    return t > 0.5 ? '#0b0f19' : 'var(--text-primary)';
+  }
+
+  // Header row
+  let headerHTML = `<div class="dash-matrix-header-row">`;
+  for (const tid of targetIds) {
+    const c = findCountry(tid);
+    const name = c ? t(c.name) : tid;
+    headerHTML += `<div class="dash-matrix-header-cell" title="${name}">${getFlag(c?.flag || 'XX')}</div>`;
+  }
+  headerHTML += `</div>`;
+
+  // Data rows
+  let rowsHTML = '';
+  for (const [src, total] of topSources) {
+    const srcName = COUNTRY_CODE_NAMES[src] || src;
+    rowsHTML += `<div class="dash-matrix-row">`;
+    rowsHTML += `<div class="dash-matrix-src">${srcName}</div>`;
+    for (const tid of targetIds) {
+      const val = matrix[src]?.[tid] || 0;
+      const bg = heatColor(val);
+      const tc = heatTextColor(val);
+      rowsHTML += `
+        <div class="dash-matrix-cell"
+             style="background:${bg};color:${tc}"
+             title="${srcName} → ${findCountry(tid) ? t(findCountry(tid).name) : tid}: ${val} ${isZh ? '次点击' : 'clicks'}"
+             onclick="jumpToCountry('${tid}')">${val > 0 ? val : ''}</div>`;
+    }
+    rowsHTML += `</div>`;
+  }
+
+  // Legend
+  const legendHTML = `
+    <div class="dash-matrix-legend">
+      <span>${isZh ? '热度' : 'Heat'}:</span>
+      <div class="dash-matrix-legend-scale">
+        ${[0, 0.2, 0.4, 0.6, 0.8, 1].map(t => {
+          const r = isDark ? Math.round(14 + t * (0 - 14)) : Math.round(232 + t * (180 - 232));
+          const g = isDark ? Math.round(184 + t * (30 - 184)) : Math.round(220 + t * (90 - 220));
+          const b = isDark ? Math.round(166 + t * (60 - 166)) : Math.round(200 + t * (60 - 200));
+          return `<div class="dash-matrix-legend-cell" style="background:rgb(${r},${g},${b})"></div>`;
+        }).join('')}
+      </div>
+      <span>${isZh ? '低 → 高' : 'Low → High'}</span>
+    </div>
+  `;
+
+  grid.innerHTML = headerHTML + rowsHTML + legendHTML;
+}
+
+// ===== TREND CHARTS =====
+function renderTrendCharts() {
+  const isZh = state.lang === 'zh';
+  const dailyStats = getDailyStats();
+  const heatData = getHeatData();
+  const now = Date.now();
+
+  // Last 30 days
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now - i * 86400000);
+    days.push(d.toISOString().slice(0, 10));
+  }
+
+  // Daily click chart
+  const clickData = days.map(d => ({ date: d, clicks: dailyStats[d]?.clicks || 0 }));
+  const maxClicks = Math.max(...clickData.map(d => d.clicks), 1);
+  const clickChart = document.getElementById('dashClickChart');
+  clickChart.innerHTML = clickData.length > 0 ? clickData.map(d => {
+    const w = maxClicks > 0 ? Math.round((d.clicks / maxClicks) * 100) : 0;
+    const label = d.date.slice(5); // MM-DD
+    return `
+      <div class="dash-chart-date-row">
+        <div class="dash-chart-date-label">${label}</div>
+        <div class="dash-chart-date-bar-wrap">
+          <div class="dash-chart-date-bar" style="width:${w}%"></div>
+        </div>
+        <div class="dash-chart-date-val">${d.clicks > 0 ? d.clicks : '—'}</div>
+      </div>`;
+  }).join('') : `<div style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:12px">${isZh ? '暂无趋势数据' : 'No trend data yet'}</div>`;
+
+  // Country trend: top 5 target countries per day
+  const countryTrend = document.getElementById('dashCountryTrendChart');
+  const ranked = getDashRanked(heatData).slice(0, 5);
+  if (ranked.length === 0) {
+    countryTrend.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:12px">${isZh ? '暂无数据' : 'No data yet'}</div>`;
+    return;
+  }
+
+  const colors = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#14b8a6'];
+  countryTrend.innerHTML = ranked.map(([id, entry], i) => {
+    const c = findCountry(id);
+    const name = c ? t(c.name) : (entry.name || id);
+    const flag = getFlag(c?.flag || 'XX');
+    const val = entry.clicks;
+    const w = maxClicks > 0 ? Math.round((val / maxClicks) * 100) : 0;
+    return `
+      <div class="dash-chart-row">
+        <div class="dash-chart-label">${flag} ${name.slice(0, 6)}</div>
+        <div class="dash-chart-bar-wrap">
+          <div class="dash-chart-bar" style="width:${w}%;background:${colors[i % colors.length]};opacity:0.8"></div>
+        </div>
+        <div class="dash-chart-val">${val}</div>
+      </div>`;
+  }).join('');
+}
+
+async function loadDashWorldMap() {
+  try {
+    // Wait for d3 and topojson to be available (CDN scripts are loaded above)
+    await new Promise((resolve, reject) => {
+      const check = setInterval(() => {
+        if (typeof d3 !== 'undefined' && typeof topojson !== 'undefined') {
+          clearInterval(check);
+          resolve();
+        }
+      }, 100);
+      setTimeout(() => { clearInterval(check); reject(new Error('Timeout waiting for D3/topojson')); }, 10000);
+    });
+
+    const topoRes = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+    const topology = await topoRes.json();
+
+    const svgEl = document.getElementById('dashboardSvg');
+    svgEl.innerHTML = '';
+
+    const W = svgEl.parentElement.clientWidth || 900;
+    const H = Math.round(W * 0.5);
+
+    const projection = d3.geoNaturalEarth1()
+      .scale(W / 6.3)
+      .translate([W / 2, H / 2]);
+
+    const path = d3.geoPath().projection(projection);
+    const countries = topojson.feature(topology, topology.objects.countries).features;
+
+    // Build ISO numeric → countryId lookup
+    const isoToCountryId = {};
+    for (const [cid, isoNum] of Object.entries(COUNTRY_ATLAS_IDS)) {
+      isoToCountryId[isoNum] = cid;
+    }
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+    countries.forEach(feature => {
+      const id = isoToCountryId[+feature.id];
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathEl.setAttribute('d', path(feature));
+      pathEl.setAttribute('class', 'country no-data');
+      pathEl.setAttribute('data-id', id || '');
+      pathEl.style.fill = '#1a2235';
+      pathEl.style.stroke = '#0b0f19';
+      pathEl.style.strokeWidth = '0.3';
+      if (id) {
+        pathEl.style.cursor = 'pointer';
+        pathEl.onclick = () => jumpToCountry(id);
+        pathEl.onmouseenter = () => {
+          const data = getHeatData();
+          if (data[id] && data[id].clicks > 0) {
+            const name = data[id].name || id;
+            showDashToast(`${name}: ${data[id].clicks} ${state.lang === 'zh' ? '次点击' : 'clicks'}`);
+          }
+        };
+        pathEl.onmouseleave = () => {};
+      }
+      g.appendChild(pathEl);
+    });
+
+    svgEl.appendChild(g);
+    svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svgEl.style.height = H + 'px';
+
+    // Apply heatmap coloring after map is loaded
+    const rawData = getHeatData();
+    const data = filterHeatByPeriod(rawData);
+    const ranked = getDashRanked(data);
+    renderDashHeatmap(data, ranked);
+  } catch (e) {
+    console.warn('World map load failed:', e);
+    const emptyEl = document.getElementById('dashEmptyMap');
+    if (emptyEl) {
+      emptyEl.style.display = 'flex';
+      const p = emptyEl.querySelector('p');
+      if (p) p.textContent = state.lang === 'zh' ? '地图加载失败，请检查网络连接' : 'Map failed to load. Check your connection.';
+    }
+  }
+}
+
+window.showDashToast = function(msg) {
+  const el = document.getElementById('dashToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.classList.remove('show'), 2000);
+};
 function renderFavorites() {
   if (state.favorites.length === 0) {
     return `
@@ -5637,6 +6841,29 @@ initZoom();
 initSearch();
 renderAll();
 initBioCanvas();
+
+// Start async geo detection (non-blocking, results available next interaction)
+detectVisitorLocation().then(geo => {
+  if (geo && geo.country !== 'XX') {
+    bumpDailyStat('visits');
+    const sessions = getSessionId();
+    // Record unique visitor per day per geo (approximate)
+    const data = getDailyStats();
+    const today = getTodayKey();
+    if (data[today]) {
+      if (!data[today].visitors) data[today].visitors = {};
+      if (!data[today].visitors[geo.country]) {
+        data[today].visitors[geo.country] = 0;
+      }
+      data[today].visitors[geo.country]++;
+      saveDailyStats(data);
+    }
+    track('visitor_geo', { country: geo.country, city: geo.city, region: geo.region });
+  }
+});
+
+// Bump daily session visit
+bumpDailyStat('uniqueSessions');
 
 // Sync sidebar visibility on resize
 window.addEventListener('resize', () => {
