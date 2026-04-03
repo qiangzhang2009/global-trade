@@ -1044,6 +1044,123 @@
     }
 
     /* ===== DASHBOARD OVERLAY ===== */
+    /* ===== ACCOUNT MODAL ===== */
+    .acct-modal {
+      position: fixed; inset: 0; z-index: 9500;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+    .acct-modal.open { display: flex; }
+    .acct-modal-inner {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 100%; max-width: 400px;
+      margin: 16px;
+      box-shadow: var(--shadow-panel);
+      animation: fadeIn 0.2s ease;
+    }
+    .acct-modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .acct-modal-logo {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Instrument Serif', serif; font-size: 16px;
+      color: var(--text-primary);
+    }
+    .acct-modal-close {
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary);
+      transition: background-color 0.15s, color 0.15s;
+      background: none; border: none; cursor: pointer;
+    }
+    .acct-modal-close:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+    .acct-modal-tabs {
+      display: flex; gap: 0; margin-bottom: 24px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      border: 1px solid var(--border-subtle);
+    }
+    .acct-tab {
+      flex: 1; padding: 8px 16px; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      color: var(--text-secondary); border: none; background: none;
+      transition: all 0.15s;
+    }
+    .acct-tab:hover { color: var(--text-primary); }
+    .acct-tab.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+    .acct-logged-in {
+      text-align: center; padding: 20px 0;
+    }
+    .acct-logged-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--bg-tertiary);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      border: 2px solid var(--accent-teal);
+    }
+    .acct-logged-title { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .acct-logged-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; }
+    .acct-form { display: none; }
+    .acct-form.active { display: block; }
+    .acct-form-desc {
+      font-size: 13px; color: var(--text-secondary);
+      margin-bottom: 16px; line-height: 1.5;
+    }
+    .acct-field {
+      margin-bottom: 16px;
+    }
+    .acct-field label {
+      display: block; font-size: 12px; font-weight: 500;
+      color: var(--text-secondary); margin-bottom: 6px;
+    }
+    .acct-field input {
+      width: 100%; height: 40px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-sm);
+      padding: 0 12px;
+      font-size: 14px; color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-sizing: border-box;
+    }
+    .acct-field input:focus {
+      border-color: var(--accent-teal);
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+    }
+    .acct-hint { font-weight: 300; font-size: 11px; color: var(--text-tertiary); }
+    .acct-msg {
+      font-size: 13px; padding: 8px 12px; border-radius: var(--radius-sm);
+      margin-bottom: 12px; min-height: 36px; line-height: 1.4;
+    }
+    .acct-msg.error { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+    .acct-msg.success { background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+    .acct-msg.info { background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+    .acct-btn {
+      width: 100%; height: 44px; border-radius: var(--radius-md);
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s; border: none; display: block; text-align: center; line-height: 44px;
+    }
+    .acct-btn-primary { background: var(--accent-teal); color: #0b0f19; }
+    .acct-btn-primary:hover { background: var(--accent-teal-light); }
+    .acct-btn-danger { background: transparent; color: #f87171; border: 1px solid rgba(239,68,68,0.3); margin-top: 16px; }
+    .acct-btn-danger:hover { background: rgba(239,68,68,0.1); }
+    .acct-footer {
+      margin-top: 16px; text-align: center;
+      font-size: 12px; color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+    /* Account button logged-in state */
+    .account-btn.logged-in { color: var(--accent-teal); }
+
     #dashboardOverlay {
       position: fixed; inset: 0; z-index: 9000;
       background: var(--bg-primary);
@@ -1307,9 +1424,16 @@
       .bio-banner-content { left: 20px; max-width: 200px; }
       .dash-grid-3 { grid-template-columns: 1fr; gap: 16px; }
       .dash-matrix-grid { font-size: 10px; }
-      .zoom-controls { display: none; }
       .header-actions { overflow-x: auto; scrollbar-width: none; }
       .header-actions::-webkit-scrollbar { display: none; }
+
+      /* Show mobile toolbar and sync bar in dashboard on mobile */
+      .dash-mobile-toolbar { display: flex; }
+      .dash-sync-bar { display: flex; }
+      #dashboardOverlay .dash-kpi-row { grid-template-columns: repeat(2, 1fr); }
+
+      /* Floating dashboard button — always visible on mobile */
+      .float-dash-btn { display: flex; }
     }
     @media (max-width: 480px) {
       :root { --banner-height: 180px; }
@@ -1317,6 +1441,9 @@
       .header-search { display: none; }
       .bio-legend { display: none; }
       .zoom-controls { display: none; }
+      #dashboardOverlay .dash-kpi-row { grid-template-columns: 1fr 1fr; padding: 16px; gap: 12px; }
+      .dash-body { padding: 16px; }
+      .dash-grid-2 { grid-template-columns: 1fr; }
     }
 
     /* ===== ZOOM TOOL ===== */
@@ -1395,6 +1522,135 @@
     .copy-success {
       color: var(--accent-b2b) !important;
     }
+
+    /* ===== DASHBOARD MOBILE TOOLBAR ===== */
+    .dash-mobile-toolbar {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .dash-mobile-search {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: 0 10px;
+      height: 36px;
+    }
+    .dash-mobile-search svg { color: var(--text-tertiary); flex-shrink: 0; }
+    .dash-mobile-search input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      padding: 0;
+    }
+    .dash-mobile-search input::placeholder { color: var(--text-tertiary); }
+    .dash-mobile-search-clear {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+    }
+    .dash-mobile-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .dash-mobile-action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s;
+    }
+    .dash-mobile-action-btn:hover { color: var(--text-primary); border-color: var(--accent-teal); }
+    .fav-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      background: var(--accent-teal);
+      color: #0b0f19;
+      font-size: 9px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ===== DASHBOARD SYNC STATUS BAR ===== */
+    .dash-sync-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 32px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+    .dash-sync-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+    .dash-sync-dot.synced { background: var(--accent-b2b-light); }
+    .dash-sync-dot.local { background: var(--accent-official-light); animation: dashSyncPulse 2s infinite; }
+    @keyframes dashSyncPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ===== FLOATING DASHBOARD BUTTON ===== */
+    .float-dash-btn {
+      display: none;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      z-index: 999;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--accent-teal);
+      color: #0b0f19;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(20, 184, 166, 0.4);
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .float-dash-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(20, 184, 166, 0.5);
+    }
+    .float-dash-btn:active { transform: scale(0.95); }
   </style>
 </head>
 <body>
@@ -1437,6 +1693,9 @@
       <button class="btn-icon dashboard-btn" onclick="showDashboard()" title="数据后台" id="dashboardBtn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       </button>
+      <button class="btn-icon account-btn" onclick="showAccountModal()" title="登录以跨设备同步数据" id="accountBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
     </div>
   </header>
 
@@ -1465,6 +1724,74 @@
       <div class="bio-legend-item">
         <span class="bio-legend-dot crossborder"></span>
         <span>跨境平台</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT MODAL -->
+  <div id="accountModal" class="acct-modal" onclick="if(event.target===this)closeAccountModal()">
+    <div class="acct-modal-inner">
+      <div class="acct-modal-header">
+        <div class="acct-modal-logo">
+          <svg width="24" height="24" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="var(--bg-tertiary)" stroke="var(--accent-teal)" stroke-width="1.5"/><path d="M16 10 L20 18 L16 16 L12 18Z" fill="none" stroke="var(--accent-teal)" stroke-width="1.2"/><circle cx="16" cy="16" r="2" fill="var(--accent-teal)"/></svg>
+          <span>TradeRoot</span>
+        </div>
+        <button class="acct-modal-close" onclick="closeAccountModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="acct-modal-tabs" id="acctTabs">
+        <button class="acct-tab active" data-tab="login" onclick="switchAccountTab('login')" id="acctTabLogin">登录</button>
+        <button class="acct-tab" data-tab="signup" onclick="switchAccountTab('signup')" id="acctTabSignup">注册</button>
+      </div>
+
+      <!-- Logged in state -->
+      <div id="acctLoggedIn" class="acct-logged-in" style="display:none">
+        <div class="acct-logged-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent-teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <p class="acct-logged-title" id="acctUserEmail"></p>
+        <p class="acct-logged-desc" id="acctLoggedInDesc"></p>
+        <button class="acct-btn acct-btn-danger" onclick="logoutAccount()" id="acctLogoutBtn">退出登录</button>
+      </div>
+
+      <!-- Login form -->
+      <div id="acctFormLogin" class="acct-form active">
+        <p class="acct-form-desc" id="acctLoginDesc"></p>
+        <div class="acct-field">
+          <label>邮箱</label>
+          <input type="email" id="acctEmail" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="acct-field">
+          <label>密码</label>
+          <input type="password" id="acctPassword" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div class="acct-msg" id="acctMessage"></div>
+        <button class="acct-btn acct-btn-primary" onclick="submitAccountLogin()">登录</button>
+      </div>
+
+      <!-- Signup form -->
+      <div id="acctFormSignup" class="acct-form">
+        <p class="acct-form-desc" id="acctSignupDesc"></p>
+        <div class="acct-field">
+          <label>邮箱</label>
+          <input type="email" id="acctEmailSignup" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="acct-field">
+          <label>密码 <span class="acct-hint">(至少6位)</span></label>
+          <input type="password" id="acctPasswordSignup" placeholder="设置密码" autocomplete="new-password">
+        </div>
+        <div class="acct-field">
+          <label>确认密码</label>
+          <input type="password" id="acctPasswordConfirm" placeholder="再次输入密码" autocomplete="new-password">
+        </div>
+        <div class="acct-msg" id="acctMessage2"></div>
+        <button class="acct-btn acct-btn-primary" onclick="submitAccountSignup()">注册</button>
+      </div>
+
+      <div class="acct-footer" id="acctFooter">
+        <p id="acctFooterText"></p>
       </div>
     </div>
   </div>
@@ -1538,6 +1865,11 @@
     <span id="notificationText"></span>
   </div>
 
+  <!-- Floating Dashboard Button (always visible on mobile) -->
+  <button class="float-dash-btn" onclick="showDashboard()" title="数据后台" id="floatDashBtn" aria-label="打开数据后台">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+  </button>
+
   <!-- DASHBOARD OVERLAY -->
   <div id="dashboardOverlay">
     <div class="dash-header">
@@ -1556,6 +1888,41 @@
         <button class="dash-time-pill" onclick="setDashPeriod(this, '7d')" data-period="7d">近7天</button>
         <button class="dash-time-pill" onclick="setDashPeriod(this, '30d')" data-period="30d">近30天</button>
       </div>
+    </div>
+
+    <!-- Mobile toolbar: search + favorites + zoom (hidden on desktop) -->
+    <div class="dash-mobile-toolbar" id="dashMobileToolbar">
+      <div class="dash-mobile-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="dashMobileSearch" placeholder="搜索国家、平台、关键词..." autocomplete="off" oninput="handleDashSearch(this.value)">
+        <button class="dash-mobile-search-clear" onclick="clearDashSearch()" style="display:none" id="dashSearchClear">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="dash-mobile-actions">
+        <button class="dash-mobile-action-btn" onclick="showFavorites(); closeDashboard();" title="收藏">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span class="fav-badge" id="favBadgeMobile" style="display:none"></span>
+        </button>
+        <button class="dash-mobile-action-btn" onclick="showAccountModal()" title="登录" id="accountMobileBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+        <button class="dash-mobile-action-btn" onclick="showDashboard()" title="数据后台" id="dashMobileBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </button>
+        <button class="dash-mobile-action-btn" onclick="dashZoom(-1)" title="缩小">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <button class="dash-mobile-action-btn" onclick="dashZoom(1)" title="放大">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sync status bar -->
+    <div class="dash-sync-bar" id="dashSyncBar">
+      <div class="dash-sync-dot" id="dashSyncDot"></div>
+      <span class="dash-sync-text" id="dashSyncText">正在同步数据...</span>
     </div>
 
     <div class="dash-kpi-row" id="dashKPIs">
@@ -4714,27 +5081,29 @@ function saveInterestMatrix(m) {
 const IPINFO_TOKEN = 'ce91223fe83bc8';
 let cachedGeo = null;
 
+// Get global shared user ID for the tenant.
+// ALL visitors share the same key so their clicks are aggregated in real-time.
+// The tenant key is derived from the app's tenant ID.
+function getOrCreateUserId() {
+  const TENANT_ID = 'globaltrade'; // All visitors share this key
+  try {
+    let uid = localStorage.getItem('tr_user_id');
+    if (!uid) {
+      // Use a stable global tenant key — all devices share the same analytics data
+      uid = 'tenant_' + TENANT_ID;
+      localStorage.setItem('tr_user_id', uid);
+    }
+    return uid;
+  } catch (_) { return 'tenant_globaltrade'; }
+}
+
 async function detectVisitorLocation() {
   if (cachedGeo) return cachedGeo;
 
-  // 1. Try Cloudflare's free geo endpoint (no API key, no rate limit)
-  try {
-    const res = await fetch('/cdn-cgi/trace');
-    if (res.ok) {
-      const text = await res.text();
-      const locMatch = text.match(/^loc=(.+)$/m);
-      if (locMatch) {
-        cachedGeo = { country: locMatch[1].trim(), countryName: '', city: '', region: '' };
-        persistGeoMeta(cachedGeo);
-        return cachedGeo;
-      }
-    }
-  } catch (_) {}
-
-  // 2. Try ipinfo.io (free plan: 50k/month, CORS-supported)
+  // 1. Try ipinfo.io (free plan: 50k/month, CORS-supported) — GETS city + region
   if (IPINFO_TOKEN && IPINFO_TOKEN !== 'REPLACE_WITH_YOUR_IPINFO_TOKEN') {
     try {
-      const res = await fetch(`https://ipinfo.io/json?token=${IPINFO_TOKEN}`);
+      const res = await fetch(`https://ipinfo.io/geo?token=${IPINFO_TOKEN}`);
       if (res.ok) {
         const json = await res.json();
         if (json.country) {
@@ -4751,18 +5120,40 @@ async function detectVisitorLocation() {
     } catch (_) {}
   }
 
-  // 3. Try browser Geolocation API (city + region level, requires HTTPS)
+  // 2. Try ipapi.co/json — gets city + region (free, no key needed, CORS)
   try {
-    const geoResult = await new Promise((resolve, reject) => {
-      if (!navigator.geolocation) { reject(new Error('no geolocation')); return; }
-      navigator.geolocation.getCurrentPosition(
-        pos => resolve(pos),
-        err => reject(err),
-        { timeout: 5000, maximumAge: 86400000 }
-      );
-    });
-    // Browser geolocation gives lat/lon but not city name — keep using ipinfo for city names
-    // The ipinfo.io result above already has city/region for this token
+    const res = await fetch('https://ipapi.co/json/');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.country_name || json.country) {
+        cachedGeo = {
+          country: json.country_code || json.country || '',
+          countryName: json.country_name || json.country || '',
+          city: json.city || '',
+          region: json.region || ''
+        };
+        persistGeoMeta(cachedGeo);
+        return cachedGeo;
+      }
+    }
+  } catch (_) {}
+
+  // 3. Try ipwho.is — another free CORS geo service
+  try {
+    const res = await fetch('https://ipwho.is/');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.country) {
+        cachedGeo = {
+          country: json.country_code || json.country || '',
+          countryName: json.country || '',
+          city: json.city || '',
+          region: json.region || ''
+        };
+        persistGeoMeta(cachedGeo);
+        return cachedGeo;
+      }
+    }
   } catch (_) {}
 
   // 4. Fallback: browser language
@@ -4858,7 +5249,397 @@ window.recordCountryClick = async function(countryId, countryName) {
     visitor_country: srcCountry,
     session_id: getSessionId()
   });
+
+  // Cross-device sync: push local heat data to backend
+  syncHeatToBackend();
 };
+
+// ===== CROSS-DEVICE HEAT SYNC =====
+// Sync heat data across devices via the backend API.
+// Strategy: pull server data, merge (add clicks), push merged result.
+// This makes click counts additive across all devices.
+const HEAT_SYNC_KEY = 'tr_heat_sync';
+// Heat sync URL — uses same-origin API (deployed to Vercel alongside index.html)
+// Falls back to legacy endpoint if same-origin not available
+const HEAT_SYNC_URL_LEGACY = 'https://website-backend-admin.vercel.app/api/heat';
+const HEAT_SYNC_URL = '/api/heat';
+let syncPending = false;
+let syncCooldown = false;
+
+function getHeatSyncMeta() {
+  try { return JSON.parse(localStorage.getItem(HEAT_SYNC_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveHeatSyncMeta(meta) {
+  try { localStorage.setItem(HEAT_SYNC_KEY, JSON.stringify(meta)); } catch (_) {}
+}
+
+// Merge: additive — if same country was clicked on multiple devices, sum clicks
+function mergeHeatData(localData, remoteData) {
+  const merged = {};
+  const allKeys = new Set([...Object.keys(localData), ...Object.keys(remoteData || {})]);
+  for (const id of allKeys) {
+    const local = localData[id] || {};
+    const remote = (remoteData || {})[id] || {};
+    merged[id] = {
+      clicks: (local.clicks || 0) + (remote.clicks || 0),
+      name: local.name || remote.name || id,
+      firstSeen: (local.firstSeen && remote.firstSeen)
+        ? (local.firstSeen < remote.firstSeen ? local.firstSeen : remote.firstSeen)
+        : (local.firstSeen || remote.firstSeen || null),
+      lastSeen: (local.lastSeen && remote.lastSeen)
+        ? (local.lastSeen > remote.lastSeen ? local.lastSeen : remote.lastSeen)
+        : (local.lastSeen || remote.lastSeen || null)
+    };
+  }
+  return merged;
+}
+
+// Get the auth header for API calls (Bearer token when logged in)
+function getAuthHeader() {
+  const account = getAccountSession();
+  if (account && account.userId) {
+    return { 'Authorization': `Bearer ${account.userId}` };
+  }
+  return {};
+}
+
+// Pull: fetch server heat data for this user and merge into local
+async function syncHeatFromBackend() {
+  const uid = getOrCreateUserId();
+  try {
+    const headers = { 'Content-Type': 'application/json', ...getAuthHeader() };
+    // Try local API first, fall back to legacy
+    let url = `${HEAT_SYNC_URL}/${uid}`;
+    let res = await fetch(url, { method: 'GET', headers });
+    if (!res.ok && HEAT_SYNC_URL !== HEAT_SYNC_URL_LEGACY) {
+      // Fallback to legacy endpoint
+      url = `${HEAT_SYNC_URL_LEGACY}/${uid}`;
+      res = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+    }
+    if (res.ok) {
+      const json = await res.json();
+      const remoteHeat = json.data || {};
+      const localHeat = getHeatData();
+      const merged = mergeHeatData(localHeat, remoteHeat);
+      saveHeatData(merged);
+
+      // Also sync daily stats and interest matrix if present
+      if (json.daily) {
+        const localDaily = getDailyStats();
+        const mergedDaily = {};
+        const allDays = new Set([...Object.keys(localDaily), ...Object.keys(json.daily)]);
+        for (const d of allDays) {
+          mergedDaily[d] = {
+            visits: (localDaily[d]?.visits || 0) + (json.daily[d]?.visits || 0),
+            clicks: (localDaily[d]?.clicks || 0) + (json.daily[d]?.clicks || 0),
+            countries: Math.max(localDaily[d]?.countries || 0, json.daily[d]?.countries || 0),
+            visitors: { ...(localDaily[d]?.visitors || {}), ...(json.daily[d]?.visitors || {}) }
+          };
+        }
+        saveDailyStats(mergedDaily);
+      }
+      if (json.matrix) {
+        const localMatrix = getInterestMatrix();
+        for (const [src, targets] of Object.entries(json.matrix)) {
+          if (!localMatrix[src]) localMatrix[src] = {};
+          for (const [target, count] of Object.entries(targets)) {
+            localMatrix[src][target] = (localMatrix[src][target] || 0) + count;
+          }
+        }
+        saveInterestMatrix(localMatrix);
+      }
+
+      // Update sync meta
+      const meta = getHeatSyncMeta();
+      meta.lastSync = new Date().toISOString();
+      meta.syncedClicks = Object.values(merged).reduce((s, e) => s + (e.clicks || 0), 0);
+      meta.syncedUrl = url;
+      saveHeatSyncMeta(meta);
+    }
+  } catch (_) {}
+}
+
+// Push: send local heat data to server
+async function syncHeatToBackend() {
+  if (syncCooldown) return;
+  syncCooldown = true;
+  setTimeout(() => { syncCooldown = false; }, 5000); // debounce 5s between pushes
+  const uid = getOrCreateUserId();
+  const heat = getHeatData();
+  const daily = getDailyStats();
+  const matrix = getInterestMatrix();
+  try {
+    const headers = { 'Content-Type': 'application/json', ...getAuthHeader() };
+    let url = `${HEAT_SYNC_URL}/${uid}`;
+    let res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ data: heat, daily, matrix, tenant: 'globaltrade' }),
+      keepalive: true
+    });
+    if (!res.ok && HEAT_SYNC_URL !== HEAT_SYNC_URL_LEGACY) {
+      // Fallback to legacy endpoint
+      url = `${HEAT_SYNC_URL_LEGACY}/${uid}`;
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: heat, daily, matrix, tenant: 'globaltrade' }),
+        keepalive: true
+      });
+    }
+  } catch (_) {}
+}
+
+// ===== CROSS-DEVICE ACCOUNT SYSTEM =====
+// Stores account session in localStorage so data merges across devices.
+// Account session: { email, userId, loginAt }
+const ACCOUNT_KEY = 'tr_account_v1';
+
+function getAccountSession() {
+  try { return JSON.parse(localStorage.getItem(ACCOUNT_KEY) || 'null'); }
+  catch { return null; }
+}
+
+function saveAccountSession(account) {
+  if (account) localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account));
+  else localStorage.removeItem(ACCOUNT_KEY);
+}
+
+// Show the account modal (login/signup)
+window.showAccountModal = function() {
+  const modal = document.getElementById('accountModal');
+  if (!modal) return;
+  const session = getAccountSession();
+  renderAccountModalContent(session);
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  track('account', { action: 'open_modal' });
+};
+
+window.closeAccountModal = function() {
+  const modal = document.getElementById('accountModal');
+  if (modal) modal.classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+window.switchAccountTab = function(tab) {
+  document.querySelectorAll('.acct-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.acct-form').forEach(f => f.classList.remove('active'));
+  const tabBtn = document.querySelector(`.acct-tab[data-tab="${tab}"]`);
+  const form = document.getElementById(`acctForm${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+  if (tabBtn) tabBtn.classList.add('active');
+  if (form) form.classList.add('active');
+  // Clear messages
+  const msgEl = document.getElementById('acctMessage');
+  if (msgEl) { msgEl.textContent = ''; msgEl.className = 'acct-msg'; }
+  const msgEl2 = document.getElementById('acctMessage2');
+  if (msgEl2) { msgEl2.textContent = ''; msgEl2.className = 'acct-msg'; }
+};
+
+function renderAccountModalContent(session) {
+  const isZh = state.lang === 'zh';
+  const tabLogin = document.getElementById('acctTabLogin');
+  const tabSignup = document.getElementById('acctTabSignup');
+  const formLogin = document.getElementById('acctFormLogin');
+  const formSignup = document.getElementById('acctFormSignup');
+  const loggedInSection = document.getElementById('acctLoggedIn');
+  const emailInput = document.getElementById('acctEmail');
+  const passInput = document.getElementById('acctPassword');
+  const pass2Input = document.getElementById('acctPassword2');
+  const loggedInDesc = document.getElementById('acctLoggedInDesc');
+  const loginDesc = document.getElementById('acctLoginDesc');
+  const signupDesc = document.getElementById('acctSignupDesc');
+  const footerText = document.getElementById('acctFooterText');
+  const logoutBtn = document.getElementById('acctLogoutBtn');
+
+  if (session) {
+    if (tabLogin) tabLogin.style.display = 'none';
+    if (tabSignup) tabSignup.style.display = 'none';
+    if (formLogin) formLogin.style.display = 'none';
+    if (formSignup) formSignup.style.display = 'none';
+    if (loggedInSection) loggedInSection.style.display = 'block';
+    const acctEmailEl = document.getElementById('acctUserEmail');
+    if (acctEmailEl) acctEmailEl.textContent = session.email || '';
+    if (loggedInDesc) loggedInDesc.textContent = isZh
+      ? '您已登录，数据将在所有设备间自动同步'
+      : 'You are signed in. Data syncs across all your devices.';
+    if (logoutBtn) logoutBtn.textContent = isZh ? '退出登录' : 'Sign Out';
+    if (footerText) footerText.textContent = '';
+  } else {
+    if (tabLogin) { tabLogin.style.display = ''; tabLogin.textContent = isZh ? '登录' : 'Sign In'; }
+    if (tabSignup) { tabSignup.style.display = ''; tabSignup.textContent = isZh ? '注册' : 'Sign Up'; }
+    if (formLogin) formLogin.style.display = '';
+    if (formSignup) formSignup.style.display = 'none';
+    if (loggedInSection) loggedInSection.style.display = 'none';
+    if (loginDesc) loginDesc.textContent = isZh
+      ? '登录后，您在此设备上的浏览数据将与您其他设备上的数据合并汇总，享受真正的跨设备数据分析。'
+      : 'Sign in to merge your browsing data across all your devices into a unified analytics dashboard.';
+    if (signupDesc) signupDesc.textContent = isZh
+      ? '注册一个账号，即可在所有设备间同步您的热度数据、收藏和偏好设置。数据将永久保存在云端。'
+      : 'Create an account to sync your heat data, favorites, and preferences across all devices. Your data is stored securely in the cloud.';
+    if (footerText) footerText.textContent = isZh
+      ? '注册即表示您同意我们的服务条款。您的数据将用于跨设备同步目的。'
+      : 'By signing up, you agree to our terms of service. Your data is used solely for cross-device sync.';
+    if (emailInput) emailInput.value = '';
+    if (passInput) passInput.value = '';
+    if (pass2Input) pass2Input.value = '';
+    switchAccountTab('login');
+  }
+  const msgEl = document.getElementById('acctMessage');
+  if (msgEl) { msgEl.textContent = ''; msgEl.className = 'acct-msg'; }
+}
+
+window.submitAccountLogin = async function() {
+  const email = (document.getElementById('acctEmail')?.value || '').trim();
+  const password = document.getElementById('acctPassword')?.value || '';
+  const msgEl = document.getElementById('acctMessage');
+  if (!email || !password) {
+    if (msgEl) { msgEl.textContent = state.lang === 'zh' ? '请填写邮箱和密码' : 'Please enter email and password'; msgEl.className = 'acct-msg error'; }
+    return;
+  }
+  if (msgEl) { msgEl.textContent = state.lang === 'zh' ? '正在登录...' : 'Logging in...'; msgEl.className = 'acct-msg info'; }
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const json = await res.json();
+    if (res.ok && json.success) {
+      saveAccountSession({ email: json.email, userId: json.userId, loginAt: new Date().toISOString() });
+      if (msgEl) { msgEl.textContent = state.lang === 'zh' ? '登录成功！正在同步数据...' : 'Login successful! Syncing data...'; msgEl.className = 'acct-msg success'; }
+      track('account', { action: 'login_success', email: email });
+      // Re-sync heat data with the new account's userId
+      setTimeout(async () => {
+        closeAccountModal();
+        await onAccountLoginSuccess(json.userId);
+      }, 800);
+    } else {
+      if (msgEl) { msgEl.textContent = json.error || (state.lang === 'zh' ? '登录失败' : 'Login failed'); msgEl.className = 'acct-msg error'; }
+    }
+  } catch (_) {
+    if (msgEl) { msgEl.textContent = state.lang === 'zh' ? '网络错误，请重试' : 'Network error, please try again'; msgEl.className = 'acct-msg error'; }
+  }
+};
+
+window.submitAccountSignup = async function() {
+  const email = (document.getElementById('acctEmailSignup')?.value || '').trim();
+  const password = document.getElementById('acctPasswordSignup')?.value || '';
+  const password2 = document.getElementById('acctPasswordConfirm')?.value || '';
+  const msgEl = document.getElementById('acctMessage2');
+  if (!email || !password || !password2) {
+    if (msgEl) { msgEl.textContent = state.lang === 'zh' ? '请填写所有字段' : 'Please fill in all fields'; msgEl.className = 'acct-msg error'; }
+    return;
+  }
+  if (password !== password2) {
+    if (msgEl) { msgEl.textContent = state.lang === 'zh' ? '两次密码不一致' : 'Passwords do not match'; msgEl.className = 'acct-msg error'; }
+    return;
+  }
+  if (password.length < 6) {
+    if (msgEl) { msgEl.textContent = state.lang === 'zh' ? '密码至少6位' : 'Password must be at least 6 characters'; msgEl.className = 'acct-msg error'; }
+    return;
+  }
+  if (msgEl) { msgEl.textContent = state.lang === 'zh' ? '正在注册...' : 'Creating account...'; msgEl.className = 'acct-msg info'; }
+  try {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const json = await res.json();
+    if (res.ok && json.success) {
+      saveAccountSession({ email: json.email, userId: json.userId, loginAt: new Date().toISOString() });
+      if (msgEl) { msgEl.textContent = state.lang === 'zh' ? '注册成功！正在同步数据...' : 'Account created! Syncing data...'; msgEl.className = 'acct-msg success'; }
+      track('account', { action: 'signup_success', email: email });
+      setTimeout(async () => {
+        closeAccountModal();
+        await onAccountLoginSuccess(json.userId);
+      }, 800);
+    } else {
+      if (msgEl) { msgEl.textContent = json.error || (state.lang === 'zh' ? '注册失败' : 'Signup failed'); msgEl.className = 'acct-msg error'; }
+    }
+  } catch (_) {
+    if (msgEl) { msgEl.textContent = state.lang === 'zh' ? '网络错误，请重试' : 'Network error, please try again'; msgEl.className = 'acct-msg error'; }
+  }
+};
+
+window.logoutAccount = function() {
+  saveAccountSession(null);
+  track('account', { action: 'logout' });
+  closeAccountModal();
+  updateAccountUI();
+  // Re-render dashboard if open
+  const overlay = document.getElementById('dashboardOverlay');
+  if (overlay && overlay.classList.contains('open')) renderDashboard();
+};
+
+// Called after successful login/signup — sync data immediately (all users share the same global data)
+async function onAccountLoginSuccess(newUserId) {
+  // All visitors share the same global analytics data via the tenant key,
+  // so login just triggers a sync to ensure fresh data
+  await syncHeatFromBackend();
+  syncHeatToBackend();
+  updateAccountUI();
+  // Re-render dashboard if open
+  const overlay = document.getElementById('dashboardOverlay');
+  if (overlay && overlay.classList.contains('open')) renderDashboard();
+  // Show confirmation
+  showToast(state.lang === 'zh'
+    ? '数据已同步！您正在为全球贸易神经网络贡献数据。'
+    : 'Data synced! You are contributing to the global trade neural network.');
+}
+
+// Update account-related UI elements
+function updateAccountUI() {
+  const session = getAccountSession();
+  const acctBtn = document.getElementById('accountBtn');
+  const acctMobileBtn = document.getElementById('accountMobileBtn');
+  const syncText = document.getElementById('dashSyncText');
+
+  if (session) {
+    if (acctBtn) {
+      acctBtn.classList.add('logged-in');
+      acctBtn.title = session.email || '已登录';
+    }
+    if (acctMobileBtn) {
+      acctMobileBtn.classList.add('logged-in');
+    }
+    if (syncText) {
+      syncText.textContent = state.lang === 'zh'
+        ? `已登录 · ${session.email}`
+        : `Signed in · ${session.email}`;
+    }
+  } else {
+    if (acctBtn) {
+      acctBtn.classList.remove('logged-in');
+      acctBtn.title = state.lang === 'zh' ? '登录以同步数据' : 'Sign in to sync data';
+    }
+    if (acctMobileBtn) acctMobileBtn.classList.remove('logged-in');
+    const meta = getHeatSyncMeta();
+    if (syncText && !meta.lastSync) {
+      syncText.textContent = state.lang === 'zh'
+        ? '实时同步中'
+        : 'Live syncing';
+    }
+  }
+}
+
+// Show a toast notification
+function showToast(message) {
+  let toast = document.getElementById('globalToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'globalToast';
+    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent-teal);color:#0b0f19;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:99999;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 3500);
+}
 
 // ===== HELPERS =====
 const $ = (sel) => document.querySelector(sel);
@@ -5624,6 +6405,84 @@ window.setDashPeriod = function(btn, period) {
   renderDashboard();
 };
 
+// Mobile toolbar functions
+function dashZoom(delta) {
+  changeFontSize(delta);
+  updateDashMobileZoomLabel();
+}
+
+function updateDashMobileZoomLabel() {
+  const btn = document.querySelector('.dash-mobile-action-btn[onclick^="dashZoom"]');
+  if (btn) {
+    const zoomLevel = document.getElementById('zoomLevel');
+    if (zoomLevel) btn.dataset.zoom = zoomLevel.textContent;
+  }
+}
+
+let dashSearchDebounce = null;
+function handleDashSearch(value) {
+  const clearBtn = document.getElementById('dashSearchClear');
+  if (clearBtn) clearBtn.style.display = value ? 'flex' : 'none';
+  clearTimeout(dashSearchDebounce);
+  dashSearchDebounce = setTimeout(() => {
+    state.searchQuery = value.trim();
+    if (value.trim().length >= 1) {
+      closeDashboard();
+      renderContent();
+    }
+  }, 400);
+}
+
+function clearDashSearch() {
+  const input = document.getElementById('dashMobileSearch');
+  if (input) { input.value = ''; input.focus(); }
+  handleDashSearch('');
+}
+
+function updateDashSyncStatus() {
+  const syncBar = document.getElementById('dashSyncBar');
+  const syncDot = document.getElementById('dashSyncDot');
+  const syncText = document.getElementById('dashSyncText');
+  if (!syncBar) return;
+  const meta = getHeatSyncMeta();
+  const account = getAccountSession();
+  const isZh = state.lang === 'zh';
+
+  if (account) {
+    // Account logged in
+    syncDot.className = 'dash-sync-dot synced';
+    const syncTime = meta.lastSync
+      ? ` · ${new Date(meta.lastSync).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`
+      : '';
+    syncText.textContent = isZh
+      ? `已登录 · ${account.email}${syncTime}`
+      : `Signed in · ${account.email}${syncTime}`;
+  } else if (meta.lastSync) {
+    const dt = new Date(meta.lastSync);
+    const timeStr = dt.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    syncDot.className = 'dash-sync-dot synced';
+    syncText.textContent = isZh
+      ? `已同步 · ${timeStr} · 点击登录实现跨设备`
+      : `Synced · ${timeStr} · Tap to sign in for cross-device`;
+  } else {
+    syncDot.className = 'dash-sync-dot local';
+    syncText.textContent = isZh
+      ? '本地数据 · 点击登录实现跨设备同步'
+      : 'Local data · Tap to sign in for cross-device sync';
+  }
+}
+
+function updateMobileFavBadge() {
+  const badge = document.getElementById('favBadgeMobile');
+  if (!badge) return;
+  if (state.favorites.length > 0) {
+    badge.textContent = state.favorites.length > 9 ? '9+' : state.favorites.length;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
 function filterHeatByPeriod(data, period) {
   period = period || dashPeriod;
   const now = Date.now();
@@ -5648,6 +6507,10 @@ function getDashRanked(data) {
 }
 
 function renderDashboard() {
+  // Guard: only render if dashboard overlay is in DOM
+  const overlay = document.getElementById('dashboardOverlay');
+  if (!overlay || !document.body.contains(overlay)) return;
+
   const rawData = getHeatData();
   const data = filterHeatByPeriod(rawData);
   const ranked = getDashRanked(data);
@@ -5723,6 +6586,13 @@ function renderDashboard() {
   renderVisitorSourcePanel();
   renderInterestMatrix(ranked.slice(0, 8));
   renderTrendCharts();
+
+  // Update sync status indicator
+  updateDashSyncStatus();
+
+  // Update mobile fav badge and account UI
+  updateMobileFavBadge();
+  updateAccountUI();
 }
 
 function getHeatColor(clicks, maxClicks, isDark) {
@@ -6915,6 +7785,10 @@ initZoom();
 initSearch();
 renderAll();
 initBioCanvas();
+updateAccountUI();
+
+// Pull heat data from server on load (non-blocking, merged with local)
+syncHeatFromBackend();
 
 // Start async geo detection (non-blocking, results available next interaction)
 detectVisitorLocation().then(geo => {
