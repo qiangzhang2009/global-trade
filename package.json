@@ -1,0 +1,9 @@
+{
+  "name": "traderoot-global-trade",
+  "version": "1.0.0",
+  "description": "TradeRoot 全球贸易导航 - Global Trade Intelligence Platform",
+  "private": true,
+  "dependencies": {
+    "@upstash/redis": "^1.34.0"
+  }
+}

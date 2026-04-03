@@ -1,31 +1,13 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    }
+    { "src": "api/**/*.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "build_data.js", "use": "@vercel/static" }
   ],
   "routes": [
-    {
-      "src": "/api/heat/(.*)$",
-      "dest": "/api/heat.js"
-    },
-    {
-      "src": "/api/auth/(.*)$",
-      "dest": "/api/auth.js"
-    },
-    {
-      "src": "/api/tracking",
-      "dest": "/api/tracking.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+    { "src": "/api/favorites/(.+)", "dest": "/api/favorites.js" },
+    { "src": "/api/heat/(.+)", "dest": "/api/heat.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

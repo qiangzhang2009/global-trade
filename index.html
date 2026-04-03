@@ -10,8 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
-  <!-- TradeRoot Analytics SDK — embedded via globaltrade tenant -->
-  <script src="https://website-backend-admin.vercel.app/api/tracking-sdk?tenant=globaltrade" async></script>
+  <!-- Heat tracking now via local API -->
+  <!-- <script src="https://website-backend-admin.vercel.app/api/tracking-sdk?tenant=globaltrade" async></script> -->
   <style>
     /* ===== CSS RESET & ROOT ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1620,7 +1620,9 @@
       background: var(--text-tertiary);
       flex-shrink: 0;
     }
+    .dash-sync-dot.syncing { background: #f59e0b; animation: dashSyncPulse 1s infinite; }
     .dash-sync-dot.synced { background: var(--accent-b2b-light); }
+    .dash-sync-dot.local { background: #6b7280; }
     .dash-sync-dot.local { background: var(--accent-official-light); animation: dashSyncPulse 2s infinite; }
     @keyframes dashSyncPulse {
       0%, 100% { opacity: 1; }
@@ -5252,6 +5254,12 @@ window.recordCountryClick = async function(countryId, countryName) {
 
   // Cross-device sync: push local heat data to backend
   syncHeatToBackend();
+
+  // If dashboard is open, refresh it to show new data
+  const dashOverlay = document.getElementById('dashboardOverlay');
+  if (dashOverlay && dashOverlay.classList.contains('open')) {
+    renderDashboard();
+  }
 };
 
 // ===== CROSS-DEVICE HEAT SYNC =====
@@ -5265,6 +5273,8 @@ const HEAT_SYNC_URL_LEGACY = 'https://website-backend-admin.vercel.app/api/heat'
 const HEAT_SYNC_URL = '/api/heat';
 let syncPending = false;
 let syncCooldown = false;
+// Background sync: pull from backend periodically even when dashboard is closed
+let bgSyncTimer = null;
 
 function getHeatSyncMeta() {
   try { return JSON.parse(localStorage.getItem(HEAT_SYNC_KEY) || '{}'); }
@@ -5275,16 +5285,20 @@ function saveHeatSyncMeta(meta) {
   try { localStorage.setItem(HEAT_SYNC_KEY, JSON.stringify(meta)); } catch (_) {}
 }
 
-// Merge: additive — if same country was clicked on multiple devices, sum clicks
+// Merge: use MAX strategy — each country shows the highest click count from any source.
+// This prevents duplicate counting when multiple devices push the same clicks.
+// When local has X and backend has Y, result is max(X, Y), not X+Y.
 function mergeHeatData(localData, remoteData) {
   const merged = {};
   const allKeys = new Set([...Object.keys(localData), ...Object.keys(remoteData || {})]);
   for (const id of allKeys) {
     const local = localData[id] || {};
     const remote = (remoteData || {})[id] || {};
+    // Use MAX — whichever device recorded more clicks wins
     merged[id] = {
-      clicks: (local.clicks || 0) + (remote.clicks || 0),
+      clicks: Math.max(local.clicks || 0, remote.clicks || 0),
       name: local.name || remote.name || id,
+      // Keep the earliest firstSeen and latest lastSeen
       firstSeen: (local.firstSeen && remote.firstSeen)
         ? (local.firstSeen < remote.firstSeen ? local.firstSeen : remote.firstSeen)
         : (local.firstSeen || remote.firstSeen || null),
@@ -5332,8 +5346,8 @@ async function syncHeatFromBackend() {
         const allDays = new Set([...Object.keys(localDaily), ...Object.keys(json.daily)]);
         for (const d of allDays) {
           mergedDaily[d] = {
-            visits: (localDaily[d]?.visits || 0) + (json.daily[d]?.visits || 0),
-            clicks: (localDaily[d]?.clicks || 0) + (json.daily[d]?.clicks || 0),
+            visits: Math.max(localDaily[d]?.visits || 0, json.daily[d]?.visits || 0),
+            clicks: Math.max(localDaily[d]?.clicks || 0, json.daily[d]?.clicks || 0),
             countries: Math.max(localDaily[d]?.countries || 0, json.daily[d]?.countries || 0),
             visitors: { ...(localDaily[d]?.visitors || {}), ...(json.daily[d]?.visitors || {}) }
           };
@@ -5345,7 +5359,7 @@ async function syncHeatFromBackend() {
         for (const [src, targets] of Object.entries(json.matrix)) {
           if (!localMatrix[src]) localMatrix[src] = {};
           for (const [target, count] of Object.entries(targets)) {
-            localMatrix[src][target] = (localMatrix[src][target] || 0) + count;
+            localMatrix[src][target] = Math.max(localMatrix[src][target] || 0, count);
           }
         }
         saveInterestMatrix(localMatrix);
@@ -5364,8 +5378,9 @@ async function syncHeatFromBackend() {
 // Push: send local heat data to server
 async function syncHeatToBackend() {
   if (syncCooldown) return;
+  syncPending = true;
   syncCooldown = true;
-  setTimeout(() => { syncCooldown = false; }, 5000); // debounce 5s between pushes
+  setTimeout(() => { syncCooldown = false; }, 2000); // debounce 2s between pushes
   const uid = getOrCreateUserId();
   const heat = getHeatData();
   const daily = getDailyStats();
@@ -5389,7 +5404,52 @@ async function syncHeatToBackend() {
         keepalive: true
       });
     }
-  } catch (_) {}
+    if (res.ok) {
+      syncPending = false;
+      const meta = getHeatSyncMeta();
+      meta.lastSync = new Date().toISOString();
+      meta.syncedClicks = Object.values(heat).reduce((s, e) => s + (e.clicks || 0), 0);
+      meta.syncedUrl = url;
+      saveHeatSyncMeta(meta);
+      const dashOverlay = document.getElementById('dashboardOverlay');
+      if (dashOverlay && dashOverlay.classList.contains('open')) {
+        updateDashSyncStatus();
+      }
+    } else {
+      syncPending = false;
+    }
+  } catch (_) {
+    syncPending = false;
+  }
+}
+
+// Background sync: pull from server periodically to show data from other devices
+// Runs every 30s even when dashboard is closed — lightweight, only GET requests
+function startBackgroundSync() {
+  stopBackgroundSync();
+  bgSyncTimer = setInterval(async () => {
+    // Only sync if no push is pending
+    if (syncPending) return;
+    // Show subtle sync indicator in header if dashboard is open
+    const syncDot = document.getElementById('dashSyncDot');
+    if (syncDot) {
+      syncDot.className = 'dash-sync-dot syncing';
+      syncDot.title = state.lang === 'zh' ? '正在后台同步...' : 'Syncing in background...';
+    }
+    await syncHeatFromBackend();
+    // If dashboard is open, refresh it to show new data from other devices
+    const dashOverlay = document.getElementById('dashboardOverlay');
+    if (dashOverlay && dashOverlay.classList.contains('open')) {
+      renderDashboard();
+    }
+  }, 30000); // pull every 30s
+}
+
+function stopBackgroundSync() {
+  if (bgSyncTimer) {
+    clearInterval(bgSyncTimer);
+    bgSyncTimer = null;
+  }
 }
 
 // ===== CROSS-DEVICE ACCOUNT SYSTEM =====
@@ -5417,6 +5477,46 @@ window.showAccountModal = function() {
   document.body.style.overflow = 'hidden';
   track('account', { action: 'open_modal' });
 };
+
+// ===== CROSS-DEVICE FAVORITES SYNC (Vercel KV) =====
+// Syncs favorites to/from Vercel KV when user is logged in
+const FAV_SYNC_KEY = 'tr_fav_sync_ts';
+
+async function syncFavoritesToBackend() {
+  const session = getAccountSession();
+  if (!session?.userId) return;
+  try {
+    const res = await fetch(`/api/favorites/${encodeURIComponent(session.userId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.userId}` },
+      body: JSON.stringify({ favorites: state.favorites })
+    });
+    if (res.ok) localStorage.setItem(FAV_SYNC_KEY, Date.now().toString());
+  } catch (_) {}
+}
+
+async function syncFavoritesFromBackend() {
+  const session = getAccountSession();
+  if (!session?.userId) return;
+  try {
+    const res = await fetch(`/api/favorites/${encodeURIComponent(session.userId)}`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${session.userId}` }
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json.favorites) && json.favorites.length > 0) {
+        // Merge: combine cloud favorites with local favorites (union by name+url)
+        const localMap = {};
+        state.favorites.forEach(f => { localMap[f.name + '|' + f.url] = f; });
+        json.favorites.forEach(f => { localMap[f.name + '|' + f.url] = f; });
+        state.favorites = Object.values(localMap);
+        localStorage.setItem('tr_root_favs', JSON.stringify(state.favorites));
+        updateFavBadge();
+      }
+    }
+  } catch (_) {}
+}
 
 window.closeAccountModal = function() {
   const modal = document.getElementById('accountModal');
@@ -5581,6 +5681,8 @@ async function onAccountLoginSuccess(newUserId) {
   // so login just triggers a sync to ensure fresh data
   await syncHeatFromBackend();
   syncHeatToBackend();
+  // Sync favorites from cloud (merge with local)
+  await syncFavoritesFromBackend();
   updateAccountUI();
   // Re-render dashboard if open
   const overlay = document.getElementById('dashboardOverlay');
@@ -6360,6 +6462,27 @@ function showFavorites() {
 let dashPeriod = 'all';
 let worldMapLoaded = false;
 let dashCountryData = [];
+let dashRefreshTimer = null;
+
+function startDashRefresh() {
+  stopDashRefresh();
+  dashRefreshTimer = setInterval(async () => {
+    const overlay = document.getElementById('dashboardOverlay');
+    if (!overlay || !overlay.classList.contains('open')) {
+      stopDashRefresh();
+      return;
+    }
+    await syncHeatFromBackend();
+    renderDashboard();
+  }, 15000);
+}
+
+function stopDashRefresh() {
+  if (dashRefreshTimer) {
+    clearInterval(dashRefreshTimer);
+    dashRefreshTimer = null;
+  }
+}
 
 window.showDashboard = function() {
   const overlay = document.getElementById('dashboardOverlay');
@@ -6371,13 +6494,15 @@ window.showDashboard = function() {
     loadDashWorldMap();
     worldMapLoaded = true;
   }
-  renderDashboard();
+  syncHeatFromBackend().then(() => renderDashboard());
+  startDashRefresh();
 };
 
 window.closeDashboard = function() {
   const overlay = document.getElementById('dashboardOverlay');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
+  stopDashRefresh();
 };
 
 window.jumpToCountry = function(countryId) {
@@ -6447,6 +6572,12 @@ function updateDashSyncStatus() {
   const meta = getHeatSyncMeta();
   const account = getAccountSession();
   const isZh = state.lang === 'zh';
+
+  if (syncPending) {
+    syncDot.className = 'dash-sync-dot syncing';
+    syncText.textContent = isZh ? '正在同步...' : 'Syncing...';
+    return;
+  }
 
   if (account) {
     // Account logged in
@@ -7224,6 +7355,8 @@ window.toggleDetailFav = function() {
     track('favorite', { action: 'add', channel_name: ch.name, channel_url: ch.url, total_favorites: state.favorites.length });
   }
   localStorage.setItem('tr_root_favs', JSON.stringify(state.favorites));
+  // Sync to Vercel KV (non-blocking, fire-and-forget)
+  syncFavoritesToBackend();
   updateFavBadge();
   const favBtn = $('#detailFavBtn');
   const favSpan = favBtn ? favBtn.querySelector('span') : null;
@@ -7789,6 +7922,9 @@ updateAccountUI();
 
 // Pull heat data from server on load (non-blocking, merged with local)
 syncHeatFromBackend();
+
+// Start background sync: pull from server every 30s to catch data from other devices
+startBackgroundSync();
 
 // Start async geo detection (non-blocking, results available next interaction)
 detectVisitorLocation().then(geo => {
