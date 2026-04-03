@@ -1987,7 +1987,7 @@
       <div class="dash-section-title" id="dashSection3">访客来源分析</div>
       <div class="dash-grid-3">
         <div class="dash-card">
-          <div class="dash-card-title" id="dashVisitorTitle">访客来源国家</div>
+          <div class="dash-card-title" id="dashVisitorTitle">访客来源国家或地区</div>
           <div class="dash-visitor-list" id="dashVisitorList"></div>
         </div>
         <div class="dash-card">
@@ -6865,6 +6865,7 @@ function renderDashBarChart(ranked, total) {
 }
 
 // ===== VISITOR SOURCE PANEL =====
+// Visitor source country/region name mapping — includes China regions (TW/HK/MO)
 const COUNTRY_CODE_NAMES = {
   CN: '中国', US: '美国', DE: '德国', JP: '日本', GB: '英国', FR: '法国',
   KR: '韩国', IN: '印度', BR: '巴西', RU: '俄罗斯', IT: '意大利', AU: '澳大利亚',
@@ -6878,7 +6879,10 @@ const COUNTRY_CODE_NAMES = {
   NZ: '新西兰', PK: '巴基斯坦', BD: '孟加拉', LK: '斯里兰卡', NP: '尼泊尔',
   MM: '缅甸', KH: '柬埔寨', LA: '老挝', UZ: '乌兹别克斯坦', KZ: '哈萨克斯坦',
   QA: '卡塔尔', KW: '科威特', OM: '阿曼', BH: '巴林', IL: '以色列', JO: '约旦',
-  LB: '黎巴嫩', HK: '香港', TW: '台湾', XX: '未知'
+  LB: '黎巴嫩',
+  // China regions: Taiwan → 中国台湾, Hong Kong → 中国香港, Macau → 中国澳门
+  TW: '中国台湾', HK: '中国香港', MO: '中国澳门',
+  XX: '未知'
 };
 
 function renderVisitorSourcePanel() {
@@ -6968,7 +6972,7 @@ function renderVisitorSourcePanel() {
   const dashVisitorTitle = document.getElementById('dashVisitorTitle');
   const dashCityTitle = document.getElementById('dashCityTitle');
   const dashRegionTitle = document.getElementById('dashRegionTitle');
-  if (dashVisitorTitle) dashVisitorTitle.textContent = isZh ? '访客来源国家' : 'Visitor Origin Countries';
+  if (dashVisitorTitle) dashVisitorTitle.textContent = isZh ? '访客来源国家或地区' : 'Visitor Origin Countries / Regions';
   if (dashCityTitle) dashCityTitle.textContent = isZh ? '热门城市' : 'Top Cities';
   if (dashRegionTitle) dashRegionTitle.textContent = isZh ? '热门地区' : 'Top Regions';
 }
