@@ -27,3 +27,4 @@ build/
 .gstack/
 .gstack-design-reports/
 .specstory/
+.vercel
